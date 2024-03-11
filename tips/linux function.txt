@@ -1,0 +1,7 @@
+### 1、加用户
+
+sudo adduser newuser //创建
+
+sudo usermod -aG sudo newuser //root权限
+
+sudo passwd newuser //设置密码
