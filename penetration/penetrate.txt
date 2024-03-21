@@ -17,3 +17,21 @@ layer子域名挖掘机  //爆破子域名，向域名发送信息看是否回�
 OneForAll  //最强大， 但是需要配置，大概率花钱
 
 subDomainBrute   //python脚本，git获得
+
+## 3、IP反查域名
+
+http://ip.tool.chinaz.com      //利用ip查该ip所在服务器上的所有系统域名，这种攻击称为旁注
+
+## 4、CDN绕过
+
+http://ping.chinaz.com   //多地ping判断用没用CDN
+
+https://asm.ca.com/en/ping.php   //用国外服务器ping以绕过CDN（因为CDN按照流量收费，网站管理员没有把CDN服务挂在国外）
+
+https://ip.tool.chinaz.com/ipbatch   //查询子域名的ip，前提是主站和子网站在同一个服务器上，因为很多只主站做了cdn，子站点可能没有用cdn
+
+phpinfo.php  //Apache的一个默认信息，管理员可能忘了删，可以显示出来该网站的ip信息
+
+可以用在google种用inurl:phpinfo.php找到这样的信息
+
+![image-20240321222435150](C:\Users\42101\AppData\Roaming\Typora\typora-user-images\image-20240321222435150.png)
