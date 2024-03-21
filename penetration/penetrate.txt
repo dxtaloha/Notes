@@ -1,0 +1,19 @@
+## 1、whois
+
+用来查询域名是否被注册，以及域名相关的数据库详细信息。
+
+原理是向对方的TCP 43号端口建立连接，然后发送关键字回车换行，查看返回的信息
+
+## 2、子域名信息收集
+
+site:域名  //搜索此域名下的子域名（google语法）
+
+crt.sh   developers.facebook.com/tools/ct/search   //收集域名的所有ssl证书信息
+
+JSFinder  //git上的python脚本，爬取某个网站的源代码上的子域名（需要网页跳转，所以源代码上会有）
+
+layer子域名挖掘机  //爆破子域名，向域名发送信息看是否回复为200
+
+OneForAll  //最强大， 但是需要配置，大概率花钱
+
+subDomainBrute   //python脚本，git获得
