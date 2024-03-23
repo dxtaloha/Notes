@@ -1,0 +1,31 @@
+## 常见漏洞扫描工具
+
+### 1、针对某类漏洞
+
+sql注入（sqlmap）
+
+weblogic（weblogicscan）
+
+### 2、针对CMS
+
+wordpress（wpscan）
+
+dedecms（dedecmsscan）
+
+### 3、针对系统应用层
+
+nessus
+
+### 4、针对某类框架
+
+Struts2（Struts2漏洞检查工具）
+
+springboot（SB-Actuator）
+
+### 5、针对web服务
+
+Burpsuite
+
+xray
+
+AWVS

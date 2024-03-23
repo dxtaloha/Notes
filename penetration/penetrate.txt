@@ -1,10 +1,10 @@
-## 1、whois
+## whois
 
 用来查询域名是否被注册，以及域名相关的数据库详细信息。
 
 原理是向对方的TCP 43号端口建立连接，然后发送关键字回车换行，查看返回的信息
 
-## 2、子域名信息收集
+## 子域名信息收集
 
 site:域名  //搜索此域名下的子域名（google语法）
 
@@ -18,11 +18,11 @@ OneForAll  //最强大， 但是需要配置，大概率花钱
 
 subDomainBrute   //python脚本，git获得
 
-## 3、IP反查域名
+## IP反查域名
 
 http://ip.tool.chinaz.com      //利用ip查该ip所在服务器上的所有系统域名，这种攻击称为旁注
 
-## 4、CDN绕过
+## CDN绕过
 
 1、http://ping.chinaz.com   //多地ping判断用没用CDN
 
@@ -129,4 +129,36 @@ http://whatweb.bugscaner.com/look/   //在线识别cms
 https://github.com/iceyhexman/onlinetools    //在线识别cms
 
 https://pentest.gdpcisa.org    //在线识别cms
+
+### 6、敏感文件泄露
+
+GitHub泄露
+
+.git泄露：用githack自动扫描（git开源）
+
+.svn泄露 
+
+管理员误将网站备份文件或者敏感信息存放在某个目录下，可以用目录探测：
+
+dirsearch：https://github.com/maurosoria/dirsearch
+
+dirmap：https://github.com/H4ckForob/dirmap
+
+### 7、Waf识别
+
+看图识Waf：https://mp.weixin.qq.com/s/PWkqNsygi-c_S7tW1y_Hxw
+
+### 8、历史漏洞信息利用
+
+说白了就是用现成的历史漏洞，检测某个网站有没有防护这个漏洞
+
+乌云镜像站 http://wy.zone.ci/
+
+乌云知识库 https://wooyun.kieran.top/#!/
+
+exploit-db https://www.eploit-db.com/
+
+知道宇创seebug https://www.seebug.org/
+
+
 
