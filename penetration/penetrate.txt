@@ -34,7 +34,7 @@ http://ip.tool.chinaz.com      //利用ip查该ip所在服务器上的所有系�
 
 可以用在google种用inurl:phpinfo.php找到这样的信息
 
-![image-20240321222435150](C:\Users\42101\AppData\Roaming\Typora\typora-user-images\image-20240321222435150.png)
+![image-20240321222435150](../photo/image-20240321222435150.png)
 
 5、https://search.censys.io/    //用网络空间搜索引擎直接查询其真实ip，包括censys、fofa、soudan、钟馗之眼等，输入以下命令查询真实ip：443.https.tls.certificate.parsed.extensions.subject_alt_name.dns_names:域名（不加https和www）
 
