@@ -12,6 +12,46 @@
 
 
 
+## 激活
+
+### windows
+
+![image-20240325092401434](C:\Users\42101\AppData\Roaming\Typora\typora-user-images\image-20240325092401434.png)
+
+在解压后的文件夹下打开cmd输入该命令生成lincense
+
+![image-20240325092510590](C:\Users\42101\AppData\Roaming\Typora\typora-user-images\image-20240325092510590.png)
+
+
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/498e9764c3214317afc775028c1bba97.png)
+
+![image-20240325092535625](C:\Users\42101\AppData\Roaming\Typora\typora-user-images\image-20240325092535625.png)
+
+### Linux
+
+1、首先需要安装专业版才能破解。
+
+2、安装过程和windows是一样的，把BurpLoaderKeygen.jar和burpsuite_pro.jar放入/usr/bin中（放在同一个文件目录下），然后用java -jar xxx.jar运行Keygen。
+
+3、然后在Keygen中run，打开burpsuite激活页面激活，激活完后先退出。
+
+4、更改burpsuite命令行快捷启动版本。apt卸载原先的社区版，然后在/usr/local/bin（这是系统环境变量PATH的默认查找路径）下建立一个burpsuite.sh脚本，写入
+
+```sh
+#!/bin/bash
+//新一行写入Keygen界面中run左边的loader command命令，把双引号都删掉即可。(因为需要其用密钥生成器引导启动)
+```
+
+将其改名后使其可执行
+
+```sh
+sudo mv burpsuite.sh burpsuite
+sudo chmod +x burpsuite
+```
+
+
+
 ## dashboard
 
 爬虫，默认为爬proxy拦截的网页
