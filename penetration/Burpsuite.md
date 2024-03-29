@@ -19,17 +19,15 @@ typora-copy-images-to: ..\photo
 
 ### windows
 
-![image-20240325092401434](D:\Desktop\Github_Notes\photo\image-20240325092401434.png)
+![image-20240325092401434](../photo/image-20240325092401434.png)
 
 在解压后的文件夹下打开cmd输入该命令生成lincense
 
-![image-20240325092510590](D:\Desktop\Github_Notes\photo\image-20240325092510590.png)
+![image-20240325092510590](../photo/image-20240325092510590.png)
 
+![498e9764c3214317afc775028c1bba97](../photo/498e9764c3214317afc775028c1bba97.png)
 
-
-![在这里插入图片描述](D:\Desktop\Github_Notes\photo\498e9764c3214317afc775028c1bba97.png)
-
-![image-20240325092535625](D:\Desktop\Github_Notes\photo\image-20240325092535625.png)
+![image-20240325092535625](../photo/image-20240325092535625.png)
 
 ### Linux
 
@@ -71,11 +69,13 @@ sudo chmod +x burpsuite
 
 爆破，可以将拦截的内容的特定字段进行爆破，需要字典
 
-![image-20240324222003616](D:\Desktop\Github_Notes\photo\image-20240324222003616.png)
+![image-20240324222003616](../photo/image-20240324222003616.png)
 
 302表明了爆破成功（有的时候200也不一定代表成功），302代表重定向，重定向到了该ip服务器的某个文件下，下图的location即为重定向到的文件目录
 
-![image-20240324222107950](D:\Desktop\Github_Notes\photo\image-20240324222107950.png)
+![image-20240324222107950](../photo/image-20240324222107950.png)
+
+
 
 ## repeater
 
