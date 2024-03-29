@@ -9,9 +9,7 @@ typora-copy-images-to: ..\photo
 
 2、如果要劫持网页流量需要先配置网页代理，然后配置浏览器证书，浏览器证书从127.0.0.1:port或者http://burp/访问下载。然后在网页中搜索关键字cert，将下载的证书导入并信任授权
 
-![image-20240323160305748](D:\Desktop\Github_Notes\photo\image-20240323160305748.png)
-
-
+![image-20240323160305748](../photo/image-20240323160305748.png)
 
 ***如果是远程截取网页信息，需要在option里配置本机的ip:port，远程被拦截主机网页需要配置代理为这个拦截主机在公网的ip:port。***
 
