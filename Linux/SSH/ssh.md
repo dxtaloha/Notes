@@ -44,3 +44,25 @@ cat ./id_rsa.pub >> ~/.ssh/authorized_keys   //将公钥信息追加入该文件
 3、运行第二个ssh示例：sudo /usr/sbin/sshd -f /etc/ssh/sshd_config_custom
 
 4、重启ssh服务
+
+## 开机自启（init类型）
+
+```bash
+service ssh start  //启动ssh
+
+//默认ssh端口开机自启
+sudo update-rc.d ssh defaults //在/etc/init.d/下设置ssh启动脚本为开机自启
+
+//自定义监听端口开机自启
+sudo cp /etc/init.d/ssh /etc/init.d/ssh_custom 
+sudo vim /etc/init.d/ssh_custom //修改其中的start启动部分，在/usr/sbin/sshd后添加 -f /etc/init.d/ssh_custom  
+sudo chmod +x /etc/init.d/ssh_custom  //使脚本可执行
+sudo update-rc.d ssh_custom defaults //在/etc/init.d/下设置ssh_custom设置开机自启
+
+
+//PS:不修改的部分在下图（即头和尾两处不用加，别的都加）
+```
+
+![image-20240403202959857](ssh.assets/image-20240403202959857.png)
+
+![image-20240403203025554](ssh.assets/image-20240403203025554.png)
