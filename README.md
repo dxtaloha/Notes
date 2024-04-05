@@ -1,1 +1,1 @@
-This is my notes of computer
+This is my notes of computer。
