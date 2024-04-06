@@ -45,15 +45,18 @@ cat ./id_rsa.pub >> ~/.ssh/authorized_keys   //将公钥信息追加入该文件
 
 4、重启ssh服务
 
-## 开机自启（init类型）
+## 开机自启
 
 ```bash
-service ssh start  //启动ssh
+service ssh start  //启动ssh（init）
+sudo systemstl start ssh //启动ssh（systemd）
+
 
 //默认ssh端口开机自启
-sudo update-rc.d ssh defaults //在/etc/init.d/下设置ssh启动脚本为开机自启
+sudo systemctl enable ssh //（有用）
+sudo update-rc.d ssh defaults //在/etc/init.d/下设置ssh启动脚本为开机自启（暂时没用）
 
-//自定义监听端口开机自启
+//自定义监听端口开机自启（暂时没用）
 sudo cp /etc/init.d/ssh /etc/init.d/ssh_custom 
 sudo vim /etc/init.d/ssh_custom //修改其中的start启动部分，在/usr/sbin/sshd后添加 -f /etc/init.d/ssh_custom  
 sudo chmod +x /etc/init.d/ssh_custom  //使脚本可执行
