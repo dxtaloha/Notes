@@ -23,15 +23,15 @@ command 1>output.txt
 
 不重定向执行ls的结果，回显在当前tty
 
-![image-20240401225306398](../../photo/image-20240401225306398.png)
+![image-20240401225306398](Redirection.assets/image-20240401225306398.png)
 
 重定向输出ls的执行结果，没有在当前tty任何回显
 
-![image-20240401225333258](../../photo/image-20240401225333258.png)
+![image-20240401225333258](Redirection.assets/image-20240401225333258.png)
 
 但是在output.txt文件中拿到了整个执行的输出
 
-<img src="../../photo/image-20240401225342884.png" alt="image-20240401225342884" style="zoom:33%;" />
+![image-20240401225342884](Redirection.assets/image-20240401225342884.png)
 
 #### 2、"<"代表将左边输入重定向到右边
 
@@ -42,17 +42,17 @@ command 0<input.txt
 
 在不重定向输入时，是在当前tty输入，然后得到结果
 
-![image-20240401225647300](../../photo/image-20240401225647300.png)
+![image-20240401225647300](Redirection.assets/image-20240401225647300.png)
 
-![image-20240401225742018](../../photo/image-20240401225742018.png)
+![image-20240401225742018](Redirection.assets/image-20240401225742018.png)
 
 在重定向输入时，是执行了输入重定向后的input.txt中的内容。(需要执行文件中的内容时，需要用bash命令，不加bash直接输入重定向并不会执行，**因为输入重定向只不过重定向了命令执行的对象，而不是重定向了命令**)
 
-![image-20240401225816488](../../photo/image-20240401225816488.png)
+![image-20240401225816488](Redirection.assets/image-20240401225816488.png)
 
-<img src="../../photo/image-20240401225826424.png" alt="image-20240401225826424" style="zoom:33%;" />
+<img src="Redirection.assets/image-20240401225826424.png" alt="image-20240401225826424" style="zoom:33%;" />
 
-![image-20240401225838869](../../photo/image-20240401225838869.png)
+![image-20240401225838869](Redirection.assets/image-20240401225838869.png)
 
 ## >&、<&
 

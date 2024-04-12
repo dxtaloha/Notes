@@ -38,6 +38,7 @@ sudo systemctl start program.service
 
 
 ##注意，该目标程序需要可执行
+##执行x.service和x是一样的
 ```
 
 

@@ -2,25 +2,27 @@
 
 1、开机按f10
 
-![image-20240324204413686](../photo/image-20240324204413686.png)
+![image-20240324204413686](hp-server.assets/image-20240324204413686.png)
 
-2、选择这个![image-20240324204438181](../photo/image-20240324204438181.png)
+2、选择这个
 
-3、![image-20240324204452334](../photo/image-20240324204452334.png)
+![image-20240324204438181](hp-server.assets/image-20240324204438181.png)
 
-4、![image-20240324204502699](../photo/image-20240324204502699.png)
+3、![image-20240324204452334](hp-server.assets/image-20240324204452334.png)
 
-5、![image-20240324204509161](../photo/image-20240324204509161.png)
+4、![image-20240324204502699](hp-server.assets/image-20240324204502699-1712921641448.png)
 
-6、![image-20240324204515875](../photo/image-20240324204515875.png)
+5、![image-20240324204509161](hp-server.assets/image-20240324204509161.png)
 
-7、![image-20240324204524135](../photo/image-20240324204524135.png)
+6、![image-20240324204515875](hp-server.assets/image-20240324204515875.png)
 
-8、![image-20240324204532247](../photo/image-20240324204532247.png)
+7、![image-20240324204524135](hp-server.assets/image-20240324204524135.png)
 
-9、![image-20240324204539673](../photo/image-20240324204539673.png)
+8、![image-20240324204532247](hp-server.assets/image-20240324204532247.png)
 
-10、![image-20240324204548217](../photo/image-20240324204548217.png)
+9、![image-20240324204539673](hp-server.assets/image-20240324204539673.png)
+
+10、![image-20240324204548217](hp-server.assets/image-20240324204548217.png)
 
 11、重启后会自动进入系统安装界面（如果用u盘装就不用载入iso，分区完直接重启）
 
@@ -28,7 +30,7 @@
 
 用rufus，特别的如果安装时出现了找不到安装介质的错误，应该在写入时以dd模式写入。
 
-![image-20240324205144104](../photo/image-20240324205144104.png)
+![image-20240324205144104](hp-server.assets/image-20240324205144104.png)
 
 如果还不行，查阅以下网页https://zhuanlan.zhihu.com/p/558879155
 

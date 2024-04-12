@@ -4,7 +4,7 @@
 
 1、这一步可有可无
 
-![image-20240323151906307](../photo/image-20240323151906307.png)
+![image-20240323151906307](kali_proxy.assets/image-20240323151906307.png)
 
 2、allow-lan
 
