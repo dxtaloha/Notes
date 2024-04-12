@@ -34,9 +34,9 @@ sudo apt install pkg-config   //(pkgconf)
 
 1、配置大页
 
-vim /etc/default/grub:加一行，GRUB_CMDLINE_LINUX_DEFAULT="default_hugepagesz=1G hugepagesz=1G hugepages=8"
+vim /etc/default/grub:加一行，GRUB_CMDLINE_LINUX_DEFAULT="default_hugepagesz=1G hugepagesz=1G hugepages=8"  //如果想调整回默认的2MB，把这一行的内容设为空即可。
 
-然后重启电脑（update_grub可能也需要执行）
+然后重启电脑（sudo update_grub可能也需要执行）
 
 ps：查配置，grep Huge /proc/meminfo
 

@@ -12,7 +12,7 @@ PasswordAutentication   yes //允许密码登录
 
 PermitRootLogin yes   //允许root用户登录
 
-## 密钥登录
+密钥登陆部分：
 
 PasswordAutentication no  //关闭密码登录
 ChallengeResponseAuthentication no  //挑战响应机制取消
@@ -48,12 +48,29 @@ cat ./id_rsa.pub >> ~/.ssh/authorized_keys   //将公钥信息追加入该文件
 ## 开机自启
 
 ```bash
-service ssh start  //启动ssh（init）
-sudo systemstl start ssh //启动ssh（systemd）
+service ssh start  //启动ssh（init），init方式不好用，尽量用systemd管理
+
+###用systemd启动和开机自启ssh和ssh_custom
+sudo systemctl start ssh.service //启动ssh
+sudo systemctl enable ssh.service //开机自启ssh
+
+###systemd配置第二个ssh_custom.service
+sudo cp ssh.service ssh_custom.service
+sudo vim ssh_custom.service
+
+###修改.service文件
+[Service]
+ExecStart=/usr/sbin/sshd -D -f /etc/ssh/sshd_config_custom
+###
+
+sudo systemctl daemon-reload //重载systemd配置
+sudo systemctl start ssh_custom.service //启动ssh_custom（systemd）
+sudo systemctl enable ssh_custom.service //开机自启ssh_custom
 
 
+
+###用init的方法暂时没用
 //默认ssh端口开机自启
-sudo systemctl enable ssh //（有用）
 sudo update-rc.d ssh defaults //在/etc/init.d/下设置ssh启动脚本为开机自启（暂时没用）
 
 //自定义监听端口开机自启（暂时没用）

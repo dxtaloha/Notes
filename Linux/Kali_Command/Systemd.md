@@ -24,10 +24,13 @@ Description=Your Program 1
 
 [Service]
 ExecStart=/path/to/program1  //可执行程序路径
-Restart=always
+Restart=on-failure  //后边有详解
 
 [Install]
 WantedBy=multi-user.target
+
+###更改完成后重载systemd配置
+sudo systemctl daemon-reload
 
 ###设置开机自启以及启动该服务
 sudo systemctl enable program.service
@@ -44,3 +47,15 @@ sudo systemctl start program.service
 systemd启动某个服务后是在后台启动，而且可以配置为开机自启。
 
 环境变量只适用于临时启动，不是在后台运行。
+
+
+
+## systemd restart字段
+
+- no：默认值，表示不自动重启服务。
+- always：无论服务退出状态如何，总是尝试重启服务。
+- on-success：只有当服务正常退出（退出状态码为0）时才重启服务。
+- on-failure：只有当服务异常退出（包括因为未捕获的异常、信号终止等）时才重启服务。
+- on-abnormal：只有当服务因为信号或超时而终止时才重启服务。
+- on-abort：只有当服务因为未捕获的信号而终止时才重启服务。
+- on-watchdog：只有当服务因为看门狗超时而终止时才重启服务。
