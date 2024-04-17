@@ -20,3 +20,27 @@ sekurlsa::logonpasswords //列出当前系统中已经登录的（或以前登�
 ```
 
 ![image-20240414215719402](WinodwsHash.assets/image-20240414215719402.png)
+
+![image-20240417164439095](WinodwsHash.assets/image-20240417164439095.png)
+
+![image-20240417164603141](WinodwsHash.assets/image-20240417164603141.png)
+
+![image-20240417164709889](WinodwsHash.assets/image-20240417164709889.png)
+
+![image-20240417164716542](WinodwsHash.assets/image-20240417164716542.png)
+
+![image-20240417165219994](WinodwsHash.assets/image-20240417165219994.png)
+
+![image-20240417201220005](WinodwsHash.assets/image-20240417201220005.png)
+
+![image-20240417202949251](WinodwsHash.assets/image-20240417202949251.png)
+
+![image-20240417205905635](WinodwsHash.assets/image-20240417205905635.png)
+
+LaZagne需要有python3的环境，并且需要安装其依赖。
+
+```bash
+pip install -r requirements.txt
+python3 ./LaZagne   //运行该命令会显示可用的options
+```
+
