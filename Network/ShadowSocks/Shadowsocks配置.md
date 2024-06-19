@@ -30,7 +30,7 @@ shadowsocks-libev有一个默认的systemd.service文件，在/lib/systemd/syste
 sudo apt-get update
 sudo apt-get shadowsocks-libev
 
-sudo vim /etc/shadowsocks/ss-server_7888.json
+sudo vim /etc/shadowsocks-libev/ss-server_7888.json
 ###服务端配置文件内容
 {
     "server":"0.0.0.0",  //服务端监听哪里来的数据包
@@ -44,7 +44,8 @@ sudo vim /etc/shadowsocks/ss-server_7888.json
 ###
 
 ###将本配置文件用ss-server执行，并配置开机自启
-sudo systemctl start /lib/systemd/system/shadowsocks-libev-server@ss-server_7888.service
-sudo systemctl enable /lib/systemd/system/shadowsocks-libev-server@ss-server_7888.service
+##路径在/lib/systemd/system/下
+sudo systemctl start shadowsocks-libev-server@ss-server_7888.service
+sudo systemctl enable shadowsocks-libev-server@ss-server_7888.service
 ```
 

@@ -23,7 +23,7 @@ sudo vim program.service
 Description=Your Program 1
 
 [Service]
-ExecStart=/path/to/program1  //可执行程序路径
+ExecStart=/path/to/program1  //可执行程序路径（记得删除注释，否则有问题）
 Restart=on-failure  //后边有详解
 
 [Install]

@@ -14,4 +14,4 @@
 
 如果配置了中继服务器，需要**被控端和控制端的ID服务器和中继服务器选项都**要配置该中继服务器的公网ip，且需要填入key。
 
-在安装rustdesk-server后，需要打开21115-21119的TCP端口和21116的UDP端口，然后利用systemd开机自启hbbr和hbbs即可。启动后会自动生成一个xxx_edxxx.pub的公钥，把他复制出来填入key中即可。
+在安装rustdesk-server后，需要打开21115-21119的TCP端口和21116的UDP端口，然后利用systemd开机自启hbbr和hbbs即可。启动后会自动生成一个xxx_edxxx.pub的公钥，把他复制出来填入key中即可。（必须直接启动一下hbbs才可以）
