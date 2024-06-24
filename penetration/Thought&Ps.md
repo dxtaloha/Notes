@@ -48,8 +48,12 @@ ss -altp
 #    (ALL : ALL) NOPASSWD ALL
 #或   (ALL : ALL) ALL
 #或   (ALL : ALL) NOPASSWD /usr/bin/xargs
-#这里指定了dxt运行哪些需要超级权限的命令时不需要输入dxt的密码即可运行，没有NOPASSWD代表全需要密码
+#这里指定了dxt在使用sudo提升权限时可以提升为任何一个用户身份来运行xargs而不需要输入dxt的密码，没有NOPASSWD代表全需要密码
 sudo -l
+
+#或   (natalia) NOPASSWD /bin/bash
+#这里指定了当前用户可以使用sudo提升权限为natalia以运行/bin/bash而不需要输入当前用户的密码，用-u指定要用sudo提升为哪个用户的权限
+sudo -u natalia /bin/bash
 
 #例如这个xargs是sudo时不需要密码，但是不用sudo运行可能是无法运行的，因为没有权限，这里的NOPASSWD是用sudo提升权限运行它且不需要密码，而不是说不用sudo就可以直接运行它
 ```
@@ -60,4 +64,14 @@ sudo -l
 #几乎统计了绝大多数可执行命令在有漏洞的情况下提权的方法
 https://gtfobins.github.io/
 ```
+
+7、有些特殊文件看起来很奇怪可能是进行编码后的某种文件，比如这里=结尾，猜测是base64编码，涌base64解码文件后用file查看文件格式，从而获取某些有用信息（这里其实是.jpg文件）
+
+<img src="Thought&amp;Ps.assets/image-20240624152319253.png" alt="image-20240624152319253" style="zoom: 33%;" />
+
+8、无法用ls访问当前目录下的文件及其信息不代表不能通过猜测文件名来直接访问到某个文件的内容（可能只禁用了用户ls的权限， 但并没有禁用查看某个文件的权限）
+
+9、从外网访问某个网站以爆破文件路径时，可能有些服务器的配置会导致外网无权限访问而返回404进而导致gobuster之类的工具无法准确判断是否存在这样一个文件。但可能内网的某个用户是有这个权限访问该网页而不会返回404的，因此可以通过ssh将 HTTP 服务隧道传输到本地计算机的某个端口，然后用gobuster进行破解。
+
+##### 进一步来说，外网用户不可以通过http端口访问到/var/www/html下的某个文件，不代表内网用户不可以通过http端口等访问到/var/www/html下的某个文件；同时内网用户可以通过http端口等访问/var/www/html下的某个文件但也并不代表其可以直接在命令行中用cat获取到这个文件的内容（用户没有读权限）。
 

