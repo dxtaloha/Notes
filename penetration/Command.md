@@ -1,3 +1,15 @@
+##### bash注意事项
+
+```bash
+#''中所有的特殊字符都不会被执行，而且''内不允许包含'，因为会关闭字符串
+#""中只有$、\、``三个特殊字符会被执行，其它均不会被执行。其中``位反引号，反引号内容会作为命令被执行。""包含"需要使用\来转义
+#bash任何命令都不会将端点的""和''作为输出
+#使用变量的时候尽量用${var}
+#变量在赋值时不加$，只有在使用读取值时才加$
+```
+
+
+
 ##### 1、grep
 
 正则表达式搜索
@@ -174,12 +186,16 @@ IFS=$'\t' read -r a
 IFS=$'\n' read -r a
 ```
 
-##### 14、while
+##### 14、循环和条件
 
-循环
+while
 
 ```bash
 while condition; do command; done
+
+while condiftion; do
+	command
+done
 ```
 
 ```bash
@@ -187,14 +203,176 @@ while condition; do command; done
 while IFS= read -r line; do readlink -e /etc/xdg/$line ; done < dict.txt
 #while循环不停轮询一个文件中是否拥有内容并直到该文件存在内容为止
 false; while [ $? -ne 0 ]; do cat /free/* ; done 2>/dev/null
+
+###################################################################################
+#while多层嵌套
+###-eq判断数字类型相等，=判断字符类型相等(加"")
+while IFS= read -r i; do count=0; while IFS= read -r j; do if [ $i = $j ]; then count=1; fi; done <2.txt; if [ $count -eq 0 ]; then echo $i; fi; done <1.txt 2>/dev/null 
+###这里<2.txt用在done结束的地方代表重定向输入到该done所属的循环内
+###展开形式,本质上不展开换行就用';'，但是展开换行就不用';''，展开只需要在while do间，if then间，for in与do间加';'即可。
+while IFS= read -r i; do
+	count=0
+	while IFS= read -r j; do
+		if [ $i = $j ]; then
+			count=1
+		fi
+	done < 2.txt
+        if [ $count -eq 0 ]; then
+        	echo $i
+        fi
+done < 1.txt
+2>/dev/null 
+###################################################################################
 ```
 
+for
+
+```bash
+#for循环生成一个特定的密码本，其中in后的内容主要有以下几种
+#{a..z}是循环表达式，代表a到z的所有字母的遍历赋值给遍历，还可以嵌套循环表达式，例如{a..z}{a..z}。也可以用{00..99}生成所有的两位数，个位数默认给出前导0
+#$(cat file.txt)读取file.txt每行文件赋值给变量 
+#枚举{a,b,kk,37}
+for var in condition; do command; done
+
+for vat in condition; do
+	command
+done
+```
+
+if
+
+```bash
+#[的前后和]的前和判断符号的前后都必须有空格
+###字符类型判断相等用=，数字型判断用-eq
+if [ $a = $b ]; then command_1; elif [ $a = $c ]; then command_2; else command_3; fi
+
+if [ $a = $b ]; then
+	command_1
+elif [ $a = $c ]; then
+	command_2
+else
+ 	command_3
+fi
+```
+
+
+
 ##### 15、ssh
+
+本地端口转发：将本地某个端口映射到远程某个端口
 
 ```bash
 #创建一个SSH隧道，将本地端口转发到远程主机上的指定端口
 #该命令执行结果是：利用ssh连接到远程主机的5000端口，并将本地的9001端口收到的数据转发到远程主机的本地地址上的80端口
 #lola@venus.hackmyvm.eu是远程主机，127.0.0.1:80是要转发到远程主机的某个地址的某个端口（这里是远程主机自己的本地地址）,127.0.0.1:9001是本地主机的哪个地址的哪个端口（这里是本地主机的本地地址，一般可以省略，默认为本地地址）
 ssh -L 127.0.0.1:9001:127.0.0.1:80 lola@venus.hackmyvm.eu -p 5000
+```
+
+动态端口转发：本地某个端口的数据通过ssh端口发送到远程
+
+```bash
+#本质上在本地某端口创建一个socks代理，将本地要发送到该端口的所有流量走该代理
+
+```
+
+
+
+远程端口转发：将远程端口映射到本地某个端口
+
+##### 16、mysql
+
+```bash
+#显示所有数据库
+show databases;
+#显示当前数据库所有表
+show tables;
+#选择数据库
+use xxx_base;
+#显示表结构
+describe xxx_table;
+#创建数据库
+create database xxx_base;
+#创建表,格式为（列名 数据类型 主键 不允许为空 自动增加序号），其中列名和数据类型为必须，其余顺序可变或为空 
+create table xxx_table (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    age INT NOT NULL,
+    email VARCHAR(100)
+);
+#插入数据(空部分代表为int类型，反正不是字符型)
+insert into xxx_table (row_1, row2, row3) values('', , '')
+#查询数据(其中字符型数据需要加'或")
+select row_1，row_2 from xxx_table where row_1 = '';
+#更新数据
+update xxx_table set row_1 = '' where row_2 = '';
+#删除数据
+delete from xxx_table where row_1 = '';
+#删除表
+drop table xxx_table;
+#删除数据库
+drop database xxx_base;
+```
+
+##### 16、alias
+
+别名
+
+```bash
+#显示所有别名
+alias
+```
+
+##### 17、strings
+
+查看某二进制文件中所有可以提取和打印的字符串
+
+```bash
+strings file
+```
+
+##### 18、mount
+
+挂载文件或者介质（包括iso）或者外部硬盘等
+
+```bash
+#创建挂载点,一般放在/mnt下，随意设置
+mkdir -p /mnt/iso
+#挂载普通文件，-o loop将文件作为块设备挂载
+mount -o loop path/to/your.iso /mnt/iso
+#挂载外部硬盘，找到硬盘的块设备路径/dev/sdb,/mnt/usb现创建
+mount /dev/sdb /mnt/usb
+
+#查看磁盘分区情况和块设备路径
+sudo fdisk -l
+#或者
+lsblk
+```
+
+##### 19、id
+
+查看当前用户所属uid和gid
+
+```bash
+#这里paula的用户id(uid)为1044，它的组id(gid)为1044
+#所以他一定在组1044中，同时这里它也还在kala这个组id为1053的组中
+paula@venus:~$ id
+uid=1044(paula) gid=1044(paula) groups=1044(paula),1053(kala)
+```
+
+##### 20、doas
+
+类似于sudo
+
+```bash
+#类似su user_1的命令
+doas -u user_1 bash
+```
+
+##### 21、vim
+
+```bash
+#dw删除一个单词
+#.重复上一个动作
+#gg第一行，G最后一行
 ```
 
