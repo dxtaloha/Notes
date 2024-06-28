@@ -35,7 +35,7 @@ ls -la /etc/cron.daily/
 
 #查找所有被设置为SUID的文件和SGID的文件
 find / -perm -u=s -type f 2>/dev/null
-find / -perm -u=s -type f 2>/dev/null
+find / -perm -g=s -type f 2>/dev/null
 #查找具有特定能力的文件
 /usr/sbin/getcap -r / 2>/dev/null
 ```
@@ -102,4 +102,4 @@ dns配置文件定义了域名和IP地址的映射、设置DNS记录、指定名
 
 13、在内网移动时，如果当前用户可以通过suid等执行会以其它人甚至超级用户的权限执行的文件，如果该猜测到该文件会执行输入的命令，那可以利用;/bin/bash来拿到该用户的shell（;后加其它命令例如cat xxx可能会被过滤空格，因此可能无法成功执行）
 
-<img src="Thought&amp;Ps.assets/image-20240626163445785.png" alt="image-20240626163445785" style="zoom:50%;" />
+14、对于被怀疑的可执行文件，可以通过strings查看其可执行文件中的字符串判断其相关或控制或影响的文件等。

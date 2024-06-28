@@ -99,9 +99,9 @@ sort xxx |grep 1
 ```bash
 #type按类型查找，f是filename文件，d是direction目录
 find / -type f/d
-#name按名查找
+#name按名查找，iname表示忽略大小写
 find / -name xxx
-#mtime按修改时间查找，+为查找3214天前修改的文件，-3214查找3214天前到现在期间修改的文件，没有后+—代表查找3214天前这天修改的文件
+#mtime按修改时间查找，atime按访问时间查找，+为查找3214天前修改的文件，-3214查找3214天前到现在期间修改的文件，没有后+—代表查找3214天前这天修改的文件
 find / -mtime /+/-3214
 #size按大小查找，c代表字节，k千字节，M兆字节，G吉字节，+代表查找比该它大的，-代表查找比它小的
 find / -size /+/-3243c/k/M/G
@@ -425,5 +425,113 @@ find / -perm -u=s -type f 2>/dev/null
 #/etc/group格式
 #arg_1为用户组名，arg_2为密码默认用x隐藏，arg_3为组id，arg_4为组用户的用户列表
 adm:x:4:username_1,username_2
+```
+
+##### 24、ps
+
+```bash
+#查看所有进程,e显示所有进程，L显示线程，f以完整格式显示进程信息
+ps -ef
+#lsof查看所有进程
+#查看pid_id进程原始执行文件路径
+ll /proc/pid_id/exe
+#查看执行pid_id进程的原始完整命令行命令
+cat /proc/pid_id/cmdline
+#查看pid_id进程的名称
+cat /proc/pid_id/comm
+```
+
+##### 25、top
+
+查看当前cpu使用情况
+
+```bash
+#在top下H可以查看所有线程信息，c可以切换COMMAND字段（在cmdline和comm之间变换）
+top
+```
+
+26、lsof
+
+查看系统中打开的所有文件，包括文件描述符、套接字、设备
+
+```bash
+lsof
+```
+
+##### 27、cron
+
+用于查看所有的定时任务
+
+```bash
+#当前用户定时任务，l查看，e编辑，-u指定某用户定时任务进行操作(需sudo)
+#实际文件位于/var/spool/cron/*
+crontab -l
+
+#查看系统级别的定时任务，它们存在于
+#/etc/crontab、/etc/cron.d/、/etc/{hourly,daily,weekly,monthly}/中
+#crontab是简易的定时任务，cron.d是复杂的模块化的定时任务，{}是固定每x执行一次的任定时任务
+
+#anacron异步定时任务，是指期望运行时间处于非其运行级别下的任务在切换到其运行级别时马上执行以实现异步效果，/etc/anacrontab中指定了哪些cron中哪些脚本应为异步定时的，它是cron的补充。
+#/var/spool/anacron/中指定了各个异步定时任务上次的执行时间，系统启动时通过检查上次执行时间和当前时间，再查看脚本定义的执行间隔时间即可明白是否执行该任务实现异步。
+```
+
+##### 28、netstat
+
+查看当前主机的所有网络情况
+
+```bash
+#a：显示所有的网络连接，包括监听和非监听状态。
+#n：以数字形式显示地址和端口（而不是解析成主机名和服务名）。
+#u、t：显示UDP、TCP协议的连接。
+#l：只显示监听状态的连接。
+#p：显示使用这些连接的进程和 PID 信息（需要 root 权限）
+netstat -altunp
+```
+
+##### 29、init.d和服务自启（现代主要使用systemd，但是还是叫做init.d）
+
+管理系统初始化时要执行的任务和运行的程序
+
+```bash
+#分为6个运行级别，对应了6个/etc/rc*.d文件，这些文件里是系统该运行级别下初始化任务
+#0:关机 
+#1:单用户模式 
+#2:多用户模式(无网络) 
+#3:多用户模式(有网络) 
+#4:用户自定义 
+#5:多用户模式(有个网络和图形界面) 
+#6:重启
+
+#查看当前运行级别
+runlevel
+#系统默认的运行级别
+vi /etc/inittab
+
+#/etc/rc.d/init.d/下为进入或离开某个运行级别时的服务启动脚本（该文件夹会被符号链接到/etc/init.d/），每个脚本对应一个服务，规定了这个服务该在什么运行级别下或其它什么情况下运行。每个脚本会被符号链接到具体的运行级别文件夹下（即/etc/rc.d/rc0.d/、/etc/rc.d/rc1.d/以此类推）。
+
+#/etc/rc.d/rc.local/下为所有其他初始化（初始化即进入或离开）脚本运行之后执行的脚本（符号链接到/etc/rc.local/），可以放自定义的脚本。
+
+#/etc/rc.d/rc脚本是初始化的启动脚本（符号链接到/etc/rc），用于执行/etc/rc.d/rc*.d/下的脚本。
+```
+
+##### 30、服务自启
+
+其实就是对于init初始化的一个补充
+
+```bash
+#服务自启动除了在初始化时直接在rc*.d/配置外，还有以下配置方式
+
+#1、通过/etc/rc.d/rc.local，可以在初始化完成后自动执行命令，例如运行/etc/init.d/下的脚本，只需要将要执行的脚本和命令添加在该文件中即可。
+echo "/path/to/exec start" >> /etc/rc.d/rc.local
+
+
+#2、通过chkconfig控制服务自启动时，自启动脚本应位于/etc/init.d/下
+#查看控制的自启服务
+chkconfig --list
+#打开或关闭服务自启，level指明自启的运行级别，默认使用2344运行级别
+chkconfig (–-level 2345) httpd on/off
+ 
+
+#3、使用ntsysv管理自启动(基于RED HAT)
 ```
 
