@@ -101,7 +101,7 @@ sort xxx |grep 1
 find / -type f/d
 #name按名查找，iname表示忽略大小写
 find / -name xxx
-#mtime按修改时间查找，atime按访问时间查找，+为查找3214天前修改的文件，-3214查找3214天前到现在期间修改的文件，没有后+—代表查找3214天前这天修改的文件
+#mtime按修改时间查找，atime按访问时间查找，ctime按创建时间查找，+为查找3214天前修改的文件，-3214查找3214天前到现在期间修改的文件，没有后+—代表查找3214天前这天修改的文件
 find / -mtime /+/-3214
 #size按大小查找，c代表字节，k千字节，M兆字节，G吉字节，+代表查找比该它大的，-代表查找比它小的
 find / -size /+/-3243c/k/M/G
@@ -327,6 +327,8 @@ create table xxx_table (
 insert into xxx_table (row_1, row2, row3) values('', , '')
 #查询数据(其中字符型数据需要加'或")
 select row_1，row_2 from xxx_table where row_1 = '';
+#查看表内所有数
+select * from table_name;
 #更新数据
 update xxx_table set row_1 = '' where row_2 = '';
 #删除数据

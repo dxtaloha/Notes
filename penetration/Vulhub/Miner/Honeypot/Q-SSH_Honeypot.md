@@ -108,7 +108,7 @@ ss -altunp
 
 3、利用top、ps直接查看可疑进程，然后对其进行pid搜查。pid搜查是核心，**通过可疑pid进一步查到rc、cron、init、log是对恶意程序全面清理的过程；而通过rc、cron、init、log查到pid是排查出恶意程序的过程。**
 
-**pid搜查**：根据pid利用ls -l /proc/pid_id/exe查看其执行路径，cat /proc/pid_id/cmdline查看执行程序时的完整命令，cat /proc/pid_id/comm查看进程名称。然后对该进程进行rc搜查、cron搜查、init搜查、log搜查、file搜查。
+**pid搜查**：根据pid利用ls -l /proc/pid_id/exe查看其执行路径，cat /proc/pid_id/cmdline查看执行程序时的完整命令，cat /proc/pid_id/comm查看进程名称。利用strings提取可疑执行文件中的相关脚本、命令、路径、可执行文件名、cron、rc*.d、init.d，然后对该进程进行rc搜查、cron搜查、init搜查、log搜查、file搜查。
 
 ```bash
 #####进程相关命令
@@ -209,6 +209,8 @@ find / -iname file_name -atime /+/-/day_count -user user_name
 find / -iname "*" -atime 1 -user user_name
 #mtime指明按修改时间查找
 find / -iname file_name -mtime /+/-/day_count -user user_name
+#ctime指明按创建时间查找
+find / -iname file_name -ctime /+/-/day_count -user user_name
 
 #2、查看文件创建时间
 stat file_name
