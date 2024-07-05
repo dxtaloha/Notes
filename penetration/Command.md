@@ -311,7 +311,7 @@ show databases;
 #显示当前数据库所有表
 show tables;
 #选择数据库
-use xxx_base;
+use xxx_
 #显示表结构
 describe xxx_table;
 #创建数据库
