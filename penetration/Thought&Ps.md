@@ -88,10 +88,11 @@ https://gtfobins.github.io/
 
 ```bash
 #base64典型为以=结尾
-#MD5格式为 $1$salt$hash
-#SHA-256格式为 $5$salt$hash
-#SHA-512格式为 $6$salt$hash
-#Blowfish格式为 $2a$salt$hash
+#MD5-based格式为 $1$salt$hash
+#SHA-512-based格式为 $6$salt$hash
+#SHA-1-based格式为 $sha1$salt$hash
+#SHA-512-based格式为 $6$salt$hash
+#Blowfish-based格式为 $2a$salt$hash
 ```
 
 12、查看用户的dns配置文件
@@ -107,3 +108,70 @@ dns配置文件定义了域名和IP地址的映射、设置DNS记录、指定名
 15、某用户以root身份运行某程序时，如果打开了某个只能以root用户身份运行的文件但是没有关闭(句柄，fd)，此时该用户可以去/proc/self/中查看这个文件句柄，也可以去这个由于未关闭打开的文件导致pid一直运行的的/proc/pid_value/fd中查找这个文件句柄，通过输出重定向查看这个fd中的内容。（虽然是root身份运行的程序，但是产生的位于/proc下该进程的信息都是属于该用户所有的，所以可以查看）
 
 16、查看网页时最好打开f12，随时查看elements和network，避免一些隐藏的元素在网页中但是不被浏览器解析显示
+
+17、容器逃逸
+
+```bash
+###1、检测是否在容器中
+#主要检测方法
+fdisk -l #如果空或者找不到命令就是在容器里
+#
+cat /proc/1/cgroup #如果有docker、lxc、k8s字眼的是容器，没有也不一定
+#
+ls -al / #根目录下有.dockerenv证明是容器（虚拟机里的容器不会有该文件）
+
+###2、逃逸
+```
+
+18、iptables和iptables6
+
+```bash
+#开放0.0.0.0:22端口不代表可以访问，因为可能被防火墙例如iptables过滤了
+#但是iptables只能过滤ipv4，不过滤ipv6，很有可能ipv6的22端口还处于开放状态，因此可以通过ping6或者
+#nmap -6 -s -Pn fe80::/64查找所有ipv6。
+
+
+#不仅如此，可能很多情况下靶机的用户都会忘记对ipv6配置防火墙规则，而只对ipv4配置了防火墙规则
+```
+
+19、
+
+```bash
+#双引号引起来的判断是按位判断，一个字符一个字符对比，通配符*是无效的
+if [[ "$PASSWORD" == "$USER_PASS" ]] ; then
+fi
+#而不加双引号的判断不是按位判断的，是可以用通配符直接使其相等的
+if [[ $PASSWORD == $USER_PASS ]] ; then
+fi
+```
+
+20、脚本在执行命令时，执行的每个命令都会在进程中显示，也就是说利用进程监控可以看到每个命令的具体参数
+
+```bash
+#举例，该脚本中判断语句赋值语句部分等并不是执行了一个命令
+#但是/usr/bin/echo等这种确实一个执行的命令，会被进程监控监控到
+PASSWORD=$(/usr/bin/cat /root/pass)
+read -ep "Password: " USER_PASS
+if [[ $PASSWORD == $USER_PASS ]] ; then
+  /usr/bin/echo "Authorized access"
+  /usr/bin/sleep 1
+  /usr/bin/zip -r -e -P "$PASSWORD" /opt/backup.zip /var/www/html
+else
+  /usr/bin/echo "Access denied"
+  exit 1
+fi
+
+#利用watch配合pa持续监控命令的执行得到命令执行的参数，进而获得一些敏感信息例如上述脚本的$PASSWORD
+watch -n 0.1 -d "ps aux |grep -ai /usr/bin/zip >> log.txt"
+cat log.txt |grep /usr/bin/zip
+```
+
+21、
+
+可执行文件就用strings何IDA查看逆向
+
+非可执行文件，量小的就挨着查看，量大的就用grep -r key_word过滤关键字，一般过滤user、password、pass这种关键字
+
+22、如果a软件可以集中管理b软件，那么可以尝试用b的漏洞在a中实现，比如hmv.adria中的scalar是管理git的工具，git可以被利用的漏洞scalar可以类似的利用
+
+23、存在某些可执行文件的help或者man（可执行文件说明），在输入参数help查看时会由于内容过度导致采用分页器less进行查看，如果help的原文件是脚本等，边查看边解释运行，则此时可以通过直接在解释的过程中输入!/bin/bash来获得一个运行该文件用户身份的shell。（见hmv.adria)

