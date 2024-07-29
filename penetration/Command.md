@@ -119,6 +119,11 @@ find / -user xxx
 find / -name xxx -exec cat yyy {} \;
 #perm, 查找符合权限的文件(这里-u不是-user)
 find / -perm -u=s 2>/dev/null
+
+#查找属于当前用户的文件，一般搜关键字user、pass
+find / -user curr_user -name user(pass) 2>/dev/null
+#查找不属于当前用户但当前用户可读或者可写的文件,/u=w是写，一般也加上搜索关键字user、pass
+find / -not -user curr_user -name user(pass) -perm /u=r
 ```
 
 ##### 6、cat
@@ -296,6 +301,7 @@ fi
 ```bash
 #创建一个SSH隧道，将本地端口转发到远程主机上的指定端口
 #该命令执行结果是：利用ssh连接到远程主机的5000端口，并将本地的9001端口收到的数据转发到远程主机的本地地址上的80端口
+ssh -L 127.0.0.1:9001:127.0.0.1:80 lola@venus.hackmyvm.eu -p 5000
 #lola@venus.hackmyvm.eu是远程主机，127.0.0.1:80是要转发到远程主机的某个地址的某个端口（这里是远程主机自己的本地地址）,127.0.0.1:9001是本地主机的哪个地址的哪个端口（这里是本地主机的本地地址，一般可以省略，默认为本地地址）
 ```
 
